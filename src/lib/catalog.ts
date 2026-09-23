@@ -33,12 +33,46 @@ import type { CartProduct, Category, Product, ProductFaq, ProductSpec } from "@/
  * Beberapa hal sengaja jatuh ke data statis kalau kolomnya kosong:
  * - `testimonial` → hanya ada di data statis (belum punya kolom di database).
  * - `art.logo` / `art.image` → kalau database kosong, logo resmi lokal dipakai.
+ * - `tone` → dihitung dari kecerahan warna box (lihat `toneDari`), bukan dibaca
+ *   dari kolom `art_tone`.
  *
  * `name`/`label` juga dipakai sebagai nilai cadangan supaya box produk baru yang
  * belum diisi warnanya tetap tampil rapi.
  */
+/**
+ * Terang relatif sebuah warna hex (`#rrggbb`) — 0 (hitam) sampai 1 (putih).
+ *
+ * Pakai bobot persepsi mata (yang dipakai WCAG untuk luminance), bukan rata-rata
+ * tiga kanal: hijau terang jauh lebih mudah dibaca di atasnya daripada biru terang.
+ * Warna yang tidak berbentuk hex dianggap terang (aman: label jadi gelap).
+ */
+function kecerahan(warna: string): number {
+  const angka = warna.replace("#", "");
+  if (!/^[0-9a-f]{6}$/i.test(angka)) return 1;
+
+  const [r, g, b] = [0, 2, 4].map((i) => Number.parseInt(angka.slice(i, i + 2), 16));
+
+  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+}
+
+/**
+ * Permukaan box 3D dihitung dari warna box-nya sendiri, bukan dari kolom
+ * `art_tone`.
+ *
+ * Dulu `tone` dipilih admin per produk. Sejak kolom warna box dihapus dari
+ * formulir produk (dan logo brand juga), produk baru tidak lagi punya warna
+ * pilihan — sementara `tone` yang selalu "light" bikin nama produknya (teks gelap)
+ * tenggelam di box gelap, alias tidak terbaca. Jadi kontrasnya dihitung di sini:
+ * box rata-rata gelap → label putih. Untuk produk yang sudah ada hasilnya sama
+ * dengan pilihan adminnya — kelima produk di katalog memang sudah cocok dengan
+ * aturan ini.
+ */
+function toneDari(from: string, to: string): "light" | "dark" {
+  return (kecerahan(from) + kecerahan(to)) / 2 < 0.45 ? "dark" : "light";
+}
+
 function dariBaris(baris: BarisProduk, lokal?: Product): Product {
-  const tone = baris.art_tone === "dark" ? "dark" : "light";
+  const tone = toneDari(baris.art_from, baris.art_to);
 
   return {
     slug: baris.slug,

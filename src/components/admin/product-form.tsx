@@ -4,6 +4,7 @@ import { ExternalLink, ImageIcon } from "lucide-react";
 
 import { simpanProdukAction } from "@/app/actions/admin";
 import { SubmitButton } from "@/components/admin/buttons";
+import { EditorPasangan } from "@/components/admin/editor-pasangan";
 import { tombol } from "@/components/admin/tombol";
 import { Card, Field, Input, Select, Textarea } from "@/components/admin/ui";
 import type { BarisKategori, BarisProduk } from "@/lib/supabase";
@@ -15,20 +16,50 @@ import type { BarisKategori, BarisProduk } from "@/lib/supabase";
  * diisi di sini langsung tampil di halaman detail produk dengan susunan yang
  * identik dengan produk lama (tagline → deskripsi → fitur → spesifikasi → FAQ).
  *
- * **Yang sengaja TIDAK ada di sini**: kolom versi, tanggal update, dan warna box
- * 3D. Ketiganya dulu bisa diatur, tapi halaman detail produk tidak menampilkannya
- * (versi & tanggal sudah tidak jadi kartu statistik maupun baris Spesifikasi),
- * jadi memintanya cuma menambah pekerjaan tanpa mengubah apa pun yang dilihat
- * pembeli. Nilainya tetap tersimpan utuh di database untuk produk lama.
+ * **Yang sengaja TIDAK ada di sini**: kolom versi, tanggal update, warna box 3D,
+ * dan logo brand. Semuanya dulu bisa diatur, tapi halaman detail produk tidak
+ * menampilkannya (versi & tanggal sudah tidak jadi kartu statistik maupun baris
+ * Spesifikasi, dan box 3D cuma dipakai produk yang belum punya foto), jadi
+ * memintanya cuma menambah pekerjaan tanpa mengubah apa pun yang dilihat pembeli.
+ * Nilainya tetap tersimpan utuh di database untuk produk lama — server action
+ * mempertahankan kolom yang tidak lagi dikirim formulir (lihat `simpanProdukAction`).
  *
  * Dua hal yang perlu diketahui admin:
- * - **Foto produk** adalah satu-satunya gambar yang tampil di katalog dan halaman
- *   detail. Ada dua kanal: unggah berkas (diproses ke Cloudinary, maks 5 MB) atau
- *   tempel URL. Kalau keduanya diisi, berkas yang menang — dan berkas lama di
- *   Cloudinary otomatis dihapus supaya kuota tidak menumpuk.
- * - **Logo brand hanya dipakai sebagai cadangan** kalau produknya belum punya
- *   foto: logo itu tampil di muka box 3D. Begitu fotonya ada, logo tidak dipakai.
+ * - **Foto produk** adalah satu-satunya gambar yang tampil di katalog **dan** di
+ *   halaman detail — keduanya memakai ukuran yang sama. Ada dua kanal: unggah
+ *   berkas (diproses ke Cloudinary, maks 5 MB) atau tempel URL. Kalau keduanya
+ *   diisi, berkas yang menang — dan berkas lama di Cloudinary otomatis dihapus
+ *   supaya kuota tidak menumpuk.
+ * - **FAQ produk baru sudah terisi jawaban umum**, jadi tidak perlu mengetik dari
+ *   nol; tinggal disesuaikan. Sama seperti Spesifikasi, keduanya diisi per kolom.
  */
+
+/**
+ * FAQ awal untuk produk **baru**.
+ *
+ * Isinya sengaja sama dengan pertanyaan yang paling sering muncul di produk yang
+ * sudah tayang (lisensi original, lama aktivasi, update, gagal aktivasi), supaya
+ * admin tidak perlu menyalin-tempel dari produk lain setiap kali menambah produk.
+ * Tetap bisa diubah/dihapus per baris di editor di bawah.
+ */
+const faqBawaan: [string, string][] = [
+  [
+    "Apakah ini lisensi original?",
+    "Ya. Semua produk kami adalah lisensi resmi yang diaktivasi ke domain Anda, bukan versi nulled atau crack.",
+  ],
+  [
+    "Berapa lama proses aktivasi?",
+    "Rata-rata di bawah 5 menit setelah pembayaran terkonfirmasi, 24 jam setiap hari.",
+  ],
+  [
+    "Apakah dapat update otomatis?",
+    "Ya, update tersedia langsung dari dashboard WordPress selama masa lisensi aktif.",
+  ],
+  [
+    "Bagaimana jika gagal aktivasi?",
+    "Tim kami membantu sampai berhasil. Bila tetap gagal, dana dikembalikan 100%.",
+  ],
+];
 export function ProductForm({
   product,
   categories,
@@ -188,120 +219,68 @@ export function ProductForm({
       </Card>
 
       <Card
-        title="Gambar produk"
-        description="Foto ini yang tampil di katalog dan di halaman detail produk. Unggah ke Cloudinary atau tempel URL — kalau keduanya diisi, berkas unggahan yang dipakai."
+        title="Foto produk"
+        description="Satu gambar yang dipakai di katalog dan di halaman detail. Unggah ke Cloudinary atau tempel URL — kalau keduanya diisi, berkas unggahan yang dipakai."
       >
-        <div className="grid gap-8 lg:grid-cols-2">
-          <div className="flex flex-col gap-4">
-            <p className="text-[13px] font-bold text-[#3a3a3f]">
-              Foto produk <span className="font-normal text-[#6f6f74]">(tampil di situs)</span>
-            </p>
+        <div className="flex max-w-2xl flex-col gap-4">
+          <p className="text-[13px] font-bold text-[#3a3a3f]">
+            Foto produk <span className="font-normal text-[#6f6f74]">(tampil di katalog & detail)</span>
+          </p>
 
-            <div className="flex items-start gap-4">
-              <span className="grid size-24 shrink-0 place-items-center overflow-hidden rounded-xl border border-[#e8e8ec] bg-[#f7f7f9]">
-                {product?.image_url ? (
-                  <Image
-                    src={product.image_url}
-                    alt=""
-                    width={96}
-                    height={96}
-                    unoptimized
-                    className="size-24 object-contain"
-                  />
-                ) : (
-                  <ImageIcon className="size-6 text-[#8a8a90]" aria-hidden="true" />
-                )}
-              </span>
+          <div className="flex items-start gap-4">
+            <span className="grid size-24 shrink-0 place-items-center overflow-hidden rounded-xl border border-[#e8e8ec] bg-[#f7f7f9]">
+              {product?.image_url ? (
+                <Image
+                  src={product.image_url}
+                  alt=""
+                  width={96}
+                  height={96}
+                  unoptimized
+                  className="size-24 object-contain"
+                />
+              ) : (
+                <ImageIcon className="size-6 text-[#8a8a90]" aria-hidden="true" />
+              )}
+            </span>
 
-              <div className="min-w-0 flex-1 flex-col gap-3">
-                <Field label="Unggah berkas" htmlFor="foto" hint="JPG, PNG, WebP, atau AVIF — maksimal 5 MB.">
-                  <input
-                    id="foto"
-                    name="foto"
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp,image/avif"
-                    className="block w-full cursor-pointer rounded-xl border border-dashed border-[#d8d8de] bg-white px-3 py-2.5 text-[13px] file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-[#151310] file:px-3 file:py-1.5 file:text-[12.5px] file:font-semibold file:text-white"
-                  />
-                </Field>
+            <div className="flex min-w-0 flex-1 flex-col gap-3">
+              <Field label="Unggah berkas" htmlFor="foto" hint="JPG, PNG, WebP, atau AVIF — maksimal 5 MB.">
+                <input
+                  id="foto"
+                  name="foto"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/avif"
+                  className="block w-full cursor-pointer rounded-xl border border-dashed border-[#d8d8de] bg-white px-3 py-2.5 text-[13px] file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-[#151310] file:px-3 file:py-1.5 file:text-[12.5px] file:font-semibold file:text-white"
+                />
+              </Field>
 
-                <Field
-                  label="atau URL gambar"
-                  htmlFor="image_url"
-                  hint="Kosongkan kalau produknya belum punya foto — katalog & halaman detail akan memakai box 3D berlogo brand."
-                >
-                  <Input
-                    id="image_url"
-                    name="image_url"
-                    defaultValue={product?.image_url ?? ""}
-                    placeholder="https://…"
-                  />
-                </Field>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            <p className="text-[13px] font-bold text-[#3a3a3f]">
-              Logo brand <span className="font-normal text-[#6f6f74]">(opsional, untuk box cadangan)</span>
-            </p>
-
-            <p className="text-[12.5px] leading-relaxed text-[#6f6f74]">
-              Dipakai hanya kalau produknya belum punya foto: logo ini tampil di muka box 3D di
-              kartu katalog. Begitu fotonya ada, logo tidak lagi terpakai.
-            </p>
-
-            <div className="flex items-start gap-4">
-              <span className="grid size-24 shrink-0 place-items-center overflow-hidden rounded-xl border border-[#e8e8ec] bg-white p-2">
-                {product?.logo_url ? (
-                  <Image
-                    src={product.logo_url}
-                    alt=""
-                    width={80}
-                    height={80}
-                    unoptimized
-                    className="max-h-20 w-auto object-contain"
-                  />
-                ) : (
-                  <ImageIcon className="size-6 text-[#8a8a90]" aria-hidden="true" />
-                )}
-              </span>
-
-              <div className="min-w-0 flex-1 flex-col gap-3">
-                <Field
-                  label="Unggah logo"
-                  htmlFor="logo"
-                  hint="Pakai logo resmi vendor, jangan dimodifikasi."
-                >
-                  <input
-                    id="logo"
-                    name="logo"
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp,image/avif"
-                    className="block w-full cursor-pointer rounded-xl border border-dashed border-[#d8d8de] bg-white px-3 py-2.5 text-[13px] file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-[#151310] file:px-3 file:py-1.5 file:text-[12.5px] file:font-semibold file:text-white"
-                  />
-                </Field>
-
-                <Field label="atau URL logo" htmlFor="logo_url">
-                  <Input
-                    id="logo_url"
-                    name="logo_url"
-                    defaultValue={product?.logo_url ?? ""}
-                    placeholder="/brands/logo-resmi.svg"
-                  />
-                </Field>
-              </div>
+              <Field
+                label="atau URL gambar"
+                htmlFor="image_url"
+                hint="Kosongkan kalau produknya belum punya foto — katalog & halaman detail akan memakai box 3D dari nama produk."
+              >
+                <Input
+                  id="image_url"
+                  name="image_url"
+                  defaultValue={product?.image_url ?? ""}
+                  placeholder="https://…"
+                />
+              </Field>
             </div>
           </div>
         </div>
 
-        <p className="mt-5 text-[12.5px] leading-relaxed text-[#6f6f74]">
+        <p className="mt-5 max-w-2xl text-[12.5px] leading-relaxed text-[#6f6f74]">
           Cloudinary menyimpan berkasnya; URL dan public_id-nya dicatat di database supaya
           berkas lama bisa dihapus otomatis saat diganti.
         </p>
       </Card>
 
-      <Card title="Isi halaman detail" description="Fitur, spesifikasi, dan FAQ — satu baris satu item.">
-        <div className="grid gap-5">
+      <Card
+        title="Isi halaman detail"
+        description="Yang diisi di sini tampil apa adanya di tab Fitur / Spesifikasi / FAQ halaman produk."
+      >
+        <div className="grid gap-6">
           <Field
             label="Poin fitur"
             htmlFor="highlights"
@@ -315,31 +294,48 @@ export function ProductForm({
             />
           </Field>
 
-          <Field
-            label="Spesifikasi"
-            htmlFor="specs"
-            hint="Format: Label | Nilai — satu baris satu baris tabel. Contoh: Masa aktif | 1 tahun update."
-          >
-            <Textarea
-              id="specs"
-              name="specs"
-              rows={6}
-              defaultValue={product?.specs?.map(([label, nilai]) => `${label} | ${nilai}`).join("\n") ?? ""}
-            />
-          </Field>
+          {/*
+            Spesifikasi & FAQ diedit per kolom, bukan sebagai teks `Judul | Isi`.
+            Dua kolom ini persis dua kolom di tabel halaman produk, jadi susunannya
+            tidak bisa lagi melenceng dari yang dilihat pembeli.
+          */}
+          <div className="flex flex-col gap-1.5">
+            <p className="text-[13px] font-semibold text-[#3a3a3f]">Spesifikasi</p>
+            <p className="text-[12px] leading-relaxed text-[#6f6f74]">
+              Satu baris satu baris tabel di tab Spesifikasi. Contoh: “Masa aktif” →
+              “1 tahun update, support 30 hari”.
+            </p>
 
-          <Field
-            label="FAQ"
-            htmlFor="faq"
-            hint="Format: Pertanyaan | Jawaban — satu baris satu tanya-jawab."
-          >
-            <Textarea
-              id="faq"
-              name="faq"
-              rows={6}
-              defaultValue={product?.faq?.map(([tanya, jawab]) => `${tanya} | ${jawab}`).join("\n") ?? ""}
-            />
-          </Field>
+            <div className="mt-2">
+              <EditorPasangan
+                dasar="specs"
+                judulKolom="Judul"
+                isiKolom="Isi"
+                contohJudul="Masa aktif"
+                contohIsi="1 tahun update, support 30 hari"
+                bawaan={product?.specs ?? []}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <p className="text-[13px] font-semibold text-[#3a3a3f]">FAQ</p>
+            <p className="text-[12px] leading-relaxed text-[#6f6f74]">
+              Tanya-jawab yang bisa dibuka pembeli di tab FAQ. Produk baru sudah terisi
+              {` ${faqBawaan.length} `}jawaban umum — ubah atau hapus baris yang tidak perlu.
+            </p>
+
+            <div className="mt-2">
+              <EditorPasangan
+                dasar="faq"
+                judulKolom="Pertanyaan"
+                isiKolom="Jawaban"
+                contohJudul="Apakah ini lisensi original?"
+                contohIsi="Ya. Semua produk kami adalah lisensi resmi…"
+                bawaan={product?.faq ?? faqBawaan}
+              />
+            </div>
+          </div>
         </div>
       </Card>
 

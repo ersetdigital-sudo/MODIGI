@@ -108,7 +108,6 @@ export default async function ProductDetailPage(props: PageProps<"/produk/[slug]
   if (!product) notFound();
 
   const namaKategori = new Map(kategori.map((item) => [item.slug, item.name]));
-  const glow = product.art.accent ?? product.art.to;
   const related = semuaProduk.filter((item) => item.slug !== product.slug).slice(0, 4);
 
   return (
@@ -131,23 +130,25 @@ export default async function ProductDetailPage(props: PageProps<"/produk/[slug]
         <div className="mt-5 grid items-start gap-8 lg:grid-cols-[1.35fr_1fr]">
           <div className="min-w-0">
             {/*
-              Ukuran artwork-nya sengaja memakai angka yang sama dengan kartu
-              katalog (88/152/164px) supaya foto produk tampil seukuran di katalog
-              maupun di halaman detail. `p-3` dipasang di bingkai putihnya, bukan di
-              artwork, jadi yang membesar adalah bingkainya — bukan fotonya.
+              Foto produk ditampilkan **persis seperti di kartu katalog**: latar
+              cream, sudut membulat, dan ukuran artwork 88/152/164px. Sebelumnya di
+              sini ada panggung gelap + glow warna brand + bingkai putih yang miring
+              — produk yang sama jadi terlihat berbeda antara katalog dan halaman
+              detailnya. Kelas panggung itu sudah dihapus dari `store.css` supaya
+              tidak ada sisa gaya yang menempel tanpa pemilik.
             */}
-            <div className="hero-stage">
-              <span className="grid-lines" aria-hidden="true" />
-              <span className="glow" style={{ background: glow }} aria-hidden="true" />
+            <div className="relative flex h-[124px] items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-b from-[#fbf9f5] to-[#efeae1] ring-1 ring-black/[0.05] sm:h-[190px] lg:h-[204px]">
+              <span
+                aria-hidden="true"
+                className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_45%,rgba(255,255,255,0.9),transparent_75%)]"
+              />
 
-              <div className="cover-box grid place-items-center overflow-hidden rounded-3xl bg-white p-3 shadow-2xl">
-                <span className="block size-[88px] overflow-hidden rounded-2xl sm:size-[152px] lg:size-[164px]">
-                  <PluginBoxArt
-                    art={product.art}
-                    sizes="(min-width: 1024px) 164px, (min-width: 640px) 152px, 88px"
-                  />
-                </span>
-              </div>
+              <span className="cover-box relative size-[88px] overflow-hidden rounded-2xl sm:size-[152px] lg:size-[164px]">
+                <PluginBoxArt
+                  art={product.art}
+                  sizes="(min-width: 1024px) 164px, (min-width: 640px) 152px, 88px"
+                />
+              </span>
             </div>
 
             <div className="mt-7">

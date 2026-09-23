@@ -94,12 +94,20 @@ export function CheckoutForm() {
     });
   };
 
-  if (!ready) {
+  /*
+   * `mengirim` ikut menahan tampilan, dan itu bukan hiasan: begitu "Buat Pesanan"
+   * ditekan, keranjang memang langsung dikosongkan (isinya sudah jadi pesanan).
+   * Tanpa penjagaan ini, komponen sempat ter-render dengan keranjang kosong
+   * sebelum halaman pembayaran muncul — pembeli melihat "keranjang Anda kosong"
+   * padahal pesanannya baru saja dibuat. Jadi selama perpindahan, yang tampil
+   * skeleton, bukan keadaan kosong.
+   */
+  if (!ready || mengirim) {
     return (
       <div className="mt-8 grid animate-pulse items-start gap-8 lg:grid-cols-[1.35fr_1fr]" aria-busy="true">
         <div className="card h-96 p-6" />
         <div className="card h-72 p-6" />
-        <span className="sr-only">Memuat keranjang…</span>
+        <span className="sr-only">{mengirim ? "Menyiapkan halaman pembayaran…" : "Memuat keranjang…"}</span>
       </div>
     );
   }

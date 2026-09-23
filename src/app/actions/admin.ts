@@ -51,16 +51,19 @@ function daftarBaris(nilai: FormDataEntryValue | null) {
 }
 
 /**
- * "Label | Nilai" per baris → `[[label, nilai], …]`.
- * Dipakai untuk tabel spesifikasi dan FAQ supaya editornya cukup satu textarea.
+ * Dua kolom berpasangan dari formulir → `[[judul, isi], …]` (spesifikasi & FAQ).
+ *
+ * Formulirnya mengirim dua daftar bernama sama — `{dasar}_label` dan `{dasar}_value`
+ * — satu entri per baris. `formData.getAll()` mempertahankan urutan elemen di DOM,
+ * jadi baris ke-n di dashboard = baris ke-n di tabel halaman produk tanpa perlu
+ * penanda indeks. Baris yang judulnya kosong dibuang (baris sisa tombol tambah).
  */
-function daftarPasangan(nilai: FormDataEntryValue | null): [string, string][] {
-  return daftarBaris(nilai)
-    .map((baris) => {
-      const pisah = baris.indexOf("|");
-      if (pisah === -1) return [baris.trim(), ""] as [string, string];
-      return [baris.slice(0, pisah).trim(), baris.slice(pisah + 1).trim()] as [string, string];
-    })
+function kolomPasangan(formData: FormData, dasar: string): [string, string][] {
+  const judul = formData.getAll(`${dasar}_label`);
+  const isi = formData.getAll(`${dasar}_value`);
+
+  return judul
+    .map((nilai, index) => [teks(nilai), teks(isi[index] ?? null)] as [string, string])
     .filter(([label]) => label.length > 0);
 }
 
@@ -174,8 +177,8 @@ export async function simpanProdukAction(formData: FormData) {
     version: teks(formData.get("version")) || lama?.version || "",
     updated: teks(formData.get("updated")) || lama?.updated || "",
     highlights: daftarBaris(formData.get("highlights")),
-    specs: daftarPasangan(formData.get("specs")),
-    faq: daftarPasangan(formData.get("faq")),
+    specs: kolomPasangan(formData, "specs"),
+    faq: kolomPasangan(formData, "faq"),
     art_label: teks(formData.get("art_label")) || lama?.art_label || nama,
     art_from: teks(formData.get("art_from")) || lama?.art_from || "#1f2937",
     art_to: teks(formData.get("art_to")) || lama?.art_to || "#0b0b0c",

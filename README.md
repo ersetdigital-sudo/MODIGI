@@ -124,8 +124,10 @@ langsung tayang di situs
 - Katalog dengan **chip kategori, pencarian, dan urutan** (terlaris, rating, harga) —
   filter dibaca dari URL (`?q=`, `?kategori=`, `?urut=`) sehingga hasilnya bisa dibagikan
 - Kartu produk: harga coret + chip diskon, rating, **seal verifikasi**, tombol keranjang
-- Halaman detail: hero-stage artwork yang **ukurannya sama dengan kartu katalog**
-  (88/152/164px — foto produk tampil seukuran di katalog maupun di detail),
+- Halaman detail: media produk memakai **perlakuan yang sama dengan kartu katalog**
+  — latar cream, `rounded-2xl`, ukuran artwork 88/152/164px — jadi foto yang sama
+  tidak lagi tampil beda antara katalog dan halaman detailnya. Panggung gelap +
+  glow warna brand sudah dihapus,
   **3 kartu statistik**, tab
   **Fitur / Deskripsi / Spesifikasi / FAQ**, buy box yang menempel saat scroll,
   blok "Cara pesan", produk terkait, dan bar beli khusus mobile
@@ -167,18 +169,46 @@ langsung tayang di situs
 - **Formulir yang sama untuk produk baru dan produk lama** — artinya produk yang
   ditambah sendiri lewat dashboard tampil persis seperti produk lain: harga coret,
   kartu statistik, tab Fitur/Deskripsi/Spesifikasi/FAQ, produk terkait.
-- **Formulirnya sengaja ringkas**: tidak ada kolom versi, tanggal update, atau warna
-  box 3D — ketiganya tidak muncul di halaman detail produk, jadi memintanya cuma
-  menambah pekerjaan. Kalau produknya belum punya foto, katalog memakai box 3D dari
-  logo brand (satu-satunya kolom gambar cadangan yang tersisa).
+- **Spesifikasi & FAQ diisi per kolom, bukan teks mentah.** Dulu keduanya ditulis
+  sebagai `Judul | Isi` satu baris satu item; salah ketik satu `|` langsung merusak
+  tabelnya dan admin baru tahu setelah produknya dibuka pembeli. Sekarang tiap baris
+  punya kolom **Judul** dan **Isi**-nya sendiri — sama persis dengan dua kolom yang
+  tampil di tab Spesifikasi & FAQ, jadi data dari dashboard dan yang dilihat pembeli
+  tidak bisa lagi berbeda. Nilainya dikirim sebagai dua daftar (`specs_label` /
+  `specs_value`) yang dibaca `formData.getAll()`, jadi urutannya terjaga.
+- **FAQ produk baru sudah terisi 4 jawaban umum** (lisensi original, lama aktivasi,
+  update, gagal aktivasi) — sama dengan pertanyaan yang paling sering muncul di
+  produk yang sudah tayang. Jadi menambah produk tidak perlu mengetik dari nol;
+  tinggal mengubah atau menghapus baris yang tidak perlu.
+- **Formulirnya sengaja ringkas**: tidak ada kolom versi, tanggal update, warna box
+  3D, atau logo brand — keempatnya tidak muncul di halaman detail produk, jadi
+  memintanya cuma menambah pekerjaan. Nilai lama tetap utuh di database: server
+  action mempertahankan kolom yang tidak lagi dikirim formulir.
+- **Foto produk adalah satu-satunya gambar.** Kalau sebuah produk belum punya foto,
+  katalog memakai box 3D dari nama produknya, dan kontras labelnya dihitung dari
+  kecerahan warna box itu (`toneDari` di `lib/catalog.ts`) — box gelap otomatis
+  dapat label putih, jadi tidak ada produk yang namanya tenggelam di box-nya sendiri.
 - **Kategori** — tambah, ubah, hapus, atur urutan. Kategori yang masih dipakai
   produk tidak bisa dihapus (sistem yang mencegah, bukan peringatan).
 - **Pesanan** — setiap checkout tercatat otomatis: data instalasi (nama, WhatsApp,
   domain, username WP-Admin), item, total, dan status bertahap
   (`baru → dikonfirmasi → dibayar → selesai`). Ada tombol langsung ke WhatsApp pembeli.
+- **Daftar pesanan tampil sebagai tabel di desktop**, kartu di layar kecil: pesanan
+  itu baris berkolom (nomor, item, domain, total, status), jadi sejajar dari atas ke
+  bawah dan jauh lebih cepat dibaca daripada tumpukan kartu. Seluruh barisnya bisa
+  diklik, dan bentuk kartunya tetap dipakai di ponsel tempat tabel tidak terbaca.
 - **Cara bayar** — atur nomor rekening bank, QRIS (unggah gambarnya ke Cloudinary),
   dan e-wallet: mana yang tampil, urutannya, dan catatan untuk pembeli. Perubahan
   langsung terlihat di halaman pembayaran.
+- **Metode yang sudah ada tampil ringkas, bukan langsung berupa formulir.** Yang
+  terbuka otomatis hanya formulir *Tambah metode*; kartu metode lama menampilkan
+  ringkasan apa yang dibaca pembeli + tombol **Ubah** (plus tombol
+  tampil/sembunyikan di header), supaya daftar rekening tidak jadi dinding input.
+- **Kolomnya menyesuaikan jenis metode** — pilih *QRIS* dan yang muncul area unggah
+  gambar QR (nomor rekening disembunyikan karena memang tidak dipakai); pilih
+  *Transfer bank* / *E-wallet* dan yang muncul nomor + atas nama, tanpa area QRIS
+  yang menggantung. Metode yang pindah dari QRIS ke transfer bank otomatis membuang
+  gambar lamanya dari Cloudinary.
 - **Pembayaran masuk** — catat transfer/QRIS/e-wallet per pesanan (boleh bertahap),
   lengkap dengan referensi & waktu lunas. Status pesanan naik sendiri ke **dibayar**
   begitu ada pembayaran lunas.
@@ -446,10 +476,11 @@ sedangkan produk & kategori diubah dari dashboard admin.
 
 ### Menambah produk
 
-Cara normal: buka **`/admin/produk/baru`**, isi formulirnya, lalu **Simpan**. Foto
-produk dan logo resminya diunggahkan ke Cloudinary dari formulir yang sama. Produk
-baru langsung tayang di katalog, beranda, halaman kategori, dan punya halaman
-detailnya sendiri — semuanya tanpa deploy.
+Cara normal: buka **`/admin/produk/baru`**, isi formulirnya, lalu **Simpan**. Fotonya
+diunggah ke Cloudinary dari formulir yang sama (tempel URL juga bisa), dan bagian
+Spesifikasi & FAQ diisi per kolom — FAQ-nya sudah terisi jawaban umum. Produk baru
+langsung tayang di katalog, beranda, halaman kategori, dan punya halaman detailnya
+sendiri — semuanya tanpa deploy.
 
 Kalau mau menambah lewat kode (mis. saat menyiapkan database baru), bentuknya seperti
 ini — setelah itu jalankan seed supaya masuk ke database:

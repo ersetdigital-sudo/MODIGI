@@ -38,17 +38,6 @@ export const popularSearches = ["Elementor", "RankMath", "WP Rocket", "WooCommer
  */
 export const heroGreeting = "Selamat datang,";
 
-/**
- * Kartu kode promo yang tampil di mobile (di atas daftar produk).
- * Isinya placeholder — ganti nilainya di sini, kartunya ikut otomatis.
- */
-export const promoCode = {
-  title: "Promo Spesial",
-  code: "MODIGI10",
-  discount: "Diskon 10%",
-  minSpend: "Min. belanja Rp150.000",
-};
-
 /** Poin keunggulan di bawah daftar produk terlaris. */
 export const trustPoints: TrustPoint[] = [
   {

@@ -167,7 +167,7 @@ src/
 │  └─ brands/                 # logo RESMI tiap plugin (dipakai apa adanya)
 │
 ├─ data/                      # SEMUA konten & daftar produk
-│  ├─ site.ts                 # hero, statistik, trust bar, CTA, kode promo
+│  ├─ site.ts                 # hero, statistik, trust bar, CTA
 │  ├─ navigation.ts           # menu header, kolom footer, social media
 │  ├─ categories.ts           # daftar kategori
 │  ├─ products.ts             # produk: harga, versi, spesifikasi, FAQ
@@ -294,10 +294,11 @@ Beberapa keputusan yang sengaja diambil, dan alasannya:
 7. **UI diverifikasi dengan pengukuran**, bukan perkiraan: Chrome headless dipakai
    untuk memeriksa overflow horizontal, ukuran target sentuh, ukuran artwork, dan
    panjang baris teks di banyak lebar layar selama pengembangan.
-8. **Hero mobile dipisah, banner promo dihapus.** Mobile memakai hero ringkas
+8. **Hero mobile dipisah; dua blok promo dihapus.** Mobile memakai hero ringkas
    (sapaan + judul + pencarian) di latar cream, desktop memakai panel gelap dengan
-   artwork. Banner promo geser pernah dicoba di bawah hero mobile tetapi dihapus:
-   terlalu banyak konten di satu layar kecil.
+   artwork. Banner promo geser dan kartu kode promo pernah dicoba di beranda mobile,
+   keduanya dibuang: terlalu banyak konten berdesakan di satu layar kecil. Efeknya
+   mobile langsung masuk ke baris kategori setelah kolom pencarian.
 
 ---
 

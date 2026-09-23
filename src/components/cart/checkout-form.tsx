@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 
+import { buatPesananAction } from "@/app/actions/pesanan";
 import { CartItemRow } from "@/components/cart/cart-item-row";
 import { useCart } from "@/components/cart/use-cart";
 import { cartCopy, checkoutCopy } from "@/data/store";
@@ -73,6 +74,20 @@ export function CheckoutForm() {
     // diblokir), baru pindah ke halaman konfirmasi.
     window.open(whatsappLink(pesan), "_blank", "noopener,noreferrer");
     router.push("/checkout/selesai");
+
+    // Pesanan juga dicatat ke database supaya bisa dikelola di dashboard admin
+    // (status, data instalasi, pembayaran). Sengaja TIDAK ditunggu: pembeli tidak
+    // boleh gagal checkout hanya karena penyimpanan di server bermasalah — pesan
+    // WhatsApp-nya sudah terkirim dan itu jalur utama pesanannya.
+    buatPesananAction({
+      orderNo: order.orderNo,
+      customer: order.customer,
+      items: order.items,
+      total: order.total,
+      compareAtTotal: order.compareAtTotal,
+    }).catch(() => {
+      // Diamkan: halaman konfirmasi tetap menampilkan pesanannya dari localStorage.
+    });
   };
 
   if (!ready) {

@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 
 import { CartDrawer } from "@/components/cart/cart-drawer";
+import { CatalogSync } from "@/components/cart/catalog-sync";
 import { siteConfig } from "@/data/site";
+import { ambilProdukRingkas } from "@/lib/catalog";
 
 import "./globals.css";
 
@@ -33,13 +35,21 @@ export const metadata: Metadata = {
  *
  * `<CartDrawer />` dipasang di akar karena panelnya harus bisa dibuka dari halaman
  * mana pun (katalog, detail produk, beranda) tanpa ikut unmount saat pindah rute.
+ *
+ * `<CatalogSync />` juga di akar: ia hanya menitipkan ringkasan katalog ke memori
+ * tab (tidak merender apa pun), dan keranjang di halaman mana pun memakainya.
  */
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Ringkasan katalog (harga & artwork) dititipkan ke browser supaya keranjang
+  // memakai harga terbaru dari database, bukan harga statis.
+  const ringkasanKatalog = await ambilProdukRingkas();
+
   return (
     <html lang="id" className={`${plusJakartaSans.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         {children}
         <CartDrawer />
+        <CatalogSync products={ringkasanKatalog} />
       </body>
     </html>
   );

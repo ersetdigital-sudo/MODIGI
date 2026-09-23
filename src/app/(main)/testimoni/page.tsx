@@ -8,8 +8,8 @@ import { Eyebrow } from "@/components/ui/eyebrow";
 import { StarRating } from "@/components/ui/star-rating";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
 import { getAllReviews, getProductReviews } from "@/data/reviews";
-import { products } from "@/data/products";
 import { testimoniCta, testimoniHero, testimoniSections, testimoniSummary } from "@/data/testimoni";
+import { ambilProduk } from "@/lib/catalog";
 import { formatCompact, formatRating } from "@/lib/format";
 import { whatsappLink } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
@@ -26,8 +26,12 @@ export const metadata: Metadata = {
  * Ulasannya diambil dari `reviews.ts`, sumber yang sama dengan halaman detail
  * produk, jadi tidak mungkin ada dua versi cerita. Ulasan dikelompokkan per produk
  * (bukan diacak) supaya pembaca bisa melihat polanya.
+ *
+ * Daftar produknya sendiri datang dari database — jadi produk yang baru ditambah
+ * lewat dashboard langsung ikut muncul di halaman ini.
  */
-export default function TestimoniPage() {
+export default async function TestimoniPage() {
+  const products = await ambilProduk();
   const semuaUlasan = getAllReviews();
   const terverifikasi = semuaUlasan.filter((review) => review.verified).length;
 

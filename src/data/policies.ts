@@ -52,7 +52,7 @@ export const syaratKetentuan: PolicyDoc = {
       id: "pesanan",
       title: "Cara pesan dan bayar",
       paragraphs: [
-        "Semua pesanan diproses lewat WhatsApp. Tidak ada akun yang perlu dibuat dan tidak ada keranjang yang harus diisi.",
+        "Pesanan dibuat lewat halaman checkout di situs ini (keranjang opsional), lalu ringkasannya dikirim ke WhatsApp admin. Tidak ada akun yang perlu dibuat.",
         "Pilih produknya, chat admin untuk menyebutkan domain yang akan diaktivasi, lalu bayar lewat transfer bank, QRIS, atau e-wallet.",
         "Pesanan mulai diproses setelah pembayaran terkonfirmasi. Rata-rata selesai di bawah 5 menit pada jam operasional.",
       ],
@@ -149,14 +149,16 @@ export const kebijakanPrivasi: PolicyDoc = {
       id: "data",
       title: "Data apa yang kami kumpulkan",
       paragraphs: [
-        "Semuanya Anda kirim sendiri lewat chat WhatsApp atau email. Kami tidak meminta data yang tidak berhubungan dengan pesanan.",
+        "Semuanya Anda kirim sendiri lewat chat WhatsApp, email, atau formulir checkout di situs ini. Kami tidak meminta data yang tidak berhubungan dengan pesanan.",
       ],
       bullets: [
         "Nama atau nama panggilan yang Anda pakai saat memesan.",
         "Nomor WhatsApp atau alamat email sebagai jalur komunikasi.",
         "Domain yang akan diaktivasi dan produk yang dipesan.",
+        "Username WP-Admin, karena instalasi plugin dilakukan oleh admin kami.",
         "Bukti pembayaran, untuk memastikan pesanan benar-benar sudah dibayar.",
       ],
+      note: "Pesanan yang dibuat lewat formulir checkout tersimpan di database kami supaya statusnya bisa dilacak. Untuk password WP-Admin berlaku sebaliknya: password itu TIDAK kami simpan — hanya dipakai sekali untuk instalasi, lalu sebaiknya Anda ganti.",
     },
     {
       id: "log",
@@ -191,6 +193,8 @@ export const kebijakanPrivasi: PolicyDoc = {
       bullets: [
         "Admin MODIGI, hanya yang menangani pesanan Anda.",
         "WhatsApp (Meta), karena pesanannya diproses lewat chat.",
+        "Supabase, sebagai tempat penyimpanan data pesanan.",
+        "Cloudinary, sebagai tempat penyimpanan foto produk — tidak ada data pribadi Anda di sana.",
         "Penyedia pembayaran yang Anda pilih: bank, QRIS, atau e-wallet.",
         "Penyedia hosting dan layanan email yang menjaga situs ini tetap berjalan.",
       ],

@@ -12,6 +12,8 @@ import type { Product } from "@/types";
 type ProductCardProps = {
   product: Product;
   className?: string;
+  /** Nama kategori dari database (cadangan: daftar kategori statis). */
+  categoryName?: string;
 };
 
 /**
@@ -25,7 +27,9 @@ type ProductCardProps = {
  * Tanda original dipakai sama seperti di halaman katalog: seal terverifikasi
  * (`ui/verified-badge.tsx`) di samping nama produk — bukan chip teks.
  */
-export function ProductCard({ product, className }: ProductCardProps) {
+export function ProductCard({ product, className, categoryName }: ProductCardProps) {
+  const namaKategori = categoryName ?? getCategoryName(product.categorySlug);
+
   return (
     <article
       className={cn(
@@ -39,7 +43,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
 
       <div className="flex flex-1 flex-col px-1 pb-1 pt-2.5 lg:pt-4">
         <p className="hidden text-[10px] font-bold uppercase tracking-[0.16em] text-muted lg:block">
-          {getCategoryName(product.categorySlug)}
+          {namaKategori}
         </p>
 
         <h3 className="mt-0.5 flex items-start gap-1.5 text-[13px] font-semibold leading-snug text-ink lg:mt-2 lg:text-[15px] lg:font-bold">

@@ -1,9 +1,11 @@
 # MODIGI — Digital Products Storefront
 
 Storefront produk digital (lisensi plugin & tema WordPress) — katalog, halaman detail
-produk dengan ulasan pelanggan, dan alur checkout via WhatsApp.
+produk dengan ulasan pelanggan, alur checkout via WhatsApp, dan **dashboard admin**
+untuk mengelola produk, kategori, pesanan, serta pembayaran.
 
-Dibangun dengan **Next.js 16 (App Router)**, **TypeScript**, dan **Tailwind CSS v4**.
+Dibangun dengan **Next.js 16 (App Router)**, **TypeScript**, **Tailwind CSS v4**,
+serta **Supabase** (database) dan **Cloudinary** (gambar produk).
 
 ![Next.js](https://img.shields.io/badge/Next.js-16.3-000?logo=nextdotjs&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white)
@@ -28,6 +30,7 @@ Dibangun dengan **Next.js 16 (App Router)**, **TypeScript**, dan **Tailwind CSS 
 - [Route & Halaman](#route--halaman)
 - [Mengubah Konten](#mengubah-konten)
 - [Sistem Desain](#sistem-desain)
+- [Dashboard Admin](#dashboard-admin)
 - [Catatan Teknis](#catatan-teknis)
 - [Yang Perlu Diputuskan Sebelum Dipakai](#yang-perlu-diputuskan-sebelum-dipakai)
 - [Roadmap](#roadmap)
@@ -74,6 +77,17 @@ bernomor supaya bagian tertentu gampang dirujuk
 | :---: | :---: | :---: |
 | ![Drawer keranjang MODIGI](docs/preview-drawer.png) | ![Halaman keranjang MODIGI](docs/preview-keranjang.png) | ![Checkout MODIGI](docs/preview-checkout.png) |
 
+**Dashboard admin** — produk, kategori, pesanan, dan pembayaran; semua perubahan
+langsung tayang di situs
+
+| Dasbor | Daftar produk | Formulir produk |
+| :---: | :---: | :---: |
+| ![Dasbor admin MODIGI](docs/preview-admin-dasbor.png) | ![Daftar produk admin](docs/preview-admin-produk.png) | ![Formulir produk admin](docs/preview-admin-form.png) |
+
+| Pesanan | Tampilan mobile |
+| :---: | :---: |
+| ![Daftar pesanan admin](docs/preview-admin-pesanan.png) | ![Dashboard admin versi mobile](docs/preview-admin-mobile.png) |
+
 | Halaman | Deskripsi singkat |
 | --- | --- |
 | `/` | Hero + pencarian, baris kategori, produk terlaris, trust bar, CTA |
@@ -85,6 +99,12 @@ bernomor supaya bagian tertentu gampang dirujuk
 | `/checkout` | Formulir data pembeli + ringkasan + persetujuan lisensi |
 | `/checkout/selesai` | Nomor pesanan, rincian, langkah pembayaran |
 | `/kebijakan/*` | Empat dokumen: Syarat & Ketentuan, Privasi, Refund, Lisensi |
+| `/admin` | **Dashboard**: ringkasan angka + pesanan terbaru (tidak diindeks) |
+| `/admin/produk` | Daftar produk: ubah status aktif/draft, edit, hapus |
+| `/admin/produk/baru` · `/admin/produk/[id]` | Formulir produk: identitas, harga, gambar (Cloudinary), box produk, isi halaman |
+| `/admin/kategori` | Tambah/ubah/hapus kategori + urutannya |
+| `/admin/pesanan` · `/admin/pesanan/[id]` | Pesanan masuk: data instalasi, status, pencatatan pembayaran |
+| `/admin/masuk` | Gerbang admin (satu password, sesi cookie httpOnly 12 jam) |
 
 ---
 
@@ -114,6 +134,28 @@ bernomor supaya bagian tertentu gampang dirujuk
   (item, total, nomor pesanan, domain) dan membukanya di chat admin — jadi admin
   tidak perlu menanyakan ulang; tombol "Tanya Dulu" juga tetap tersedia
 
+**Dashboard admin** (`/admin`, tidak diindeks mesin pencari)
+
+- **Produk** — tambah/edit/hapus, unggah **foto produk & logo resmi ke Cloudinary**
+  (berkas lama otomatis dihapus supaya kuota tidak menumpuk), atau tempel URL kalau
+  gambarnya sudah ada di tempat lain. Ada juga pemilih warna & tombol aktif/draft.
+- **Formulir yang sama untuk produk baru dan produk lama** — artinya produk yang
+  ditambah sendiri lewat dashboard tampil persis seperti produk lain: box produk,
+  harga coret, kartu statistik, tab Fitur/Deskripsi/Spesifikasi/FAQ, produk terkait.
+- **Kategori** — tambah, ubah, hapus, atur urutan. Kategori yang masih dipakai
+  produk tidak bisa dihapus (sistem yang mencegah, bukan peringatan).
+- **Pesanan** — setiap checkout tercatat otomatis: data instalasi (nama, WhatsApp,
+  domain, username WP-Admin), item, total, dan status bertahap
+  (`baru → dikonfirmasi → dibayar → selesai`). Ada tombol langsung ke WhatsApp pembeli.
+- **Pembayaran** — catat transfer/QRIS/e-wallet per pesanan (boleh bertahap),
+  lengkap dengan referensi & waktu lunas. Status pesanan naik sendiri ke **dibayar**
+  begitu ada pembayaran lunas.
+- **Ubah produk → situs ikut berubah** tanpa deploy: server action admin memanggil
+  `revalidatePath`, jadi halaman beranda/katalog/detail disegarkan saat itu juga.
+- **Satu password, satu pengelola.** Sesi disimpan di cookie httpOnly bertanda tangan
+  HMAC selama 12 jam; setiap server action memeriksa sesi sendiri, jadi penjagaan
+  tidak bergantung pada tampilan halaman.
+
 **Brand & bantuan**
 
 - Beranda lengkap dengan showcase kategori dan trust bar
@@ -130,12 +172,43 @@ bernomor supaya bagian tertentu gampang dirujuk
   desktop = panel gelap full-bleed dengan artwork. Isi desktop (eyebrow, chip
   pencarian populer, 4 statistik) disembunyikan di mobile dengan `lg:*`, bukan
   di-render ulang — jadi tidak ada duplikasi markup
-- **SEO**: metadata per produk, halaman detail **ter-prerender saat build**,
-  breadcrumb, struktur heading berurutan
+- **SEO**: metadata per produk, halaman detail di-cache (ISR) dan disegarkan dari
+  dashboard saat produknya berubah, breadcrumb, struktur heading berurutan
 - **Aksesibilitas**: indikator fokus di semua elemen interaktif, ikon dekoratif
   `aria-hidden`, label untuk pembaca layar, target pointer ≥ 24px
 - **Responsif terukur**: diuji di 320 / 375 / 768 / 1024 / 1280 / 1440 px dengan
   nol horizontal scroll
+
+---
+
+## Dashboard Admin
+
+Masuk di **`/admin`** (otomatis diarahkan ke `/admin/masuk`) dengan `ADMIN_PASSWORD`.
+Halaman-halaman dashboard tidak diindeks mesin pencari dan tidak memakai chrome situs.
+
+```
+/admin              dasbor: produk aktif, pesanan baru, omzet lunas, pesanan terbaru
+/admin/produk       daftar produk — aktif/draft, edit, hapus
+  ├─ /baru          formulir produk baru
+  └─ /[id]          formulir produk yang sama + zona hapus
+/admin/kategori     tambah, ubah, hapus, dan urutkan kategori
+/admin/pesanan      daftar pesanan + detailnya
+  └─ /[id]          data instalasi, status pesanan, catat pembayaran
+```
+
+**Tabel yang dipakai** (`supabase/schema.sql`)
+
+| Tabel | Isi |
+| --- | --- |
+| `products` | Produk: harga, harga resmi, statistik, isi halaman, gambar Cloudinary, warna box, status |
+| `categories` | Kategori + `sort_order` (urutan tampil di beranda) |
+| `orders` | Pesanan: nomor, data pembeli, domain, username WP-Admin, total, status |
+| `order_items` | Baris item per pesanan (nama, harga, jumlah, subtotal) |
+| `payments` | Pembayaran per pesanan: metode, nominal, status, referensi, waktu lunas |
+
+Semua tabel mengaktifkan **Row Level Security tanpa policy**: hanya `service_role`
+(dipakai server Next.js) yang bisa membaca/menulis. Kalaupun anon key beredar, isi
+toko — termasuk data pesanan pembeli — tetap tidak terbaca dari browser.
 
 ---
 
@@ -147,8 +220,11 @@ bernomor supaya bagian tertentu gampang dirujuk
 | UI | React 19.2, Tailwind CSS v4, Lucide Icons |
 | Bahasa | TypeScript 5 |
 | Utilitas | `clsx` + `tailwind-merge` (helper `cn`) |
-| Data | File statis di `src/data/` — **tanpa database, tanpa API key** |
-| Deploy | Vercel / Node.js (statis + beberapa halaman dinamis) |
+| Data | **Supabase (Postgres)** — `products`, `categories`, `orders`, `order_items`, `payments` (RLS aktif, hanya `service_role` yang bisa akses) |
+| Gambar | **Cloudinary** — unggahan dari dashboard admin, tanpa SDK (signature SHA-1 sendiri) |
+| Autentikasi | Password admin + cookie httpOnly bertanda tangan HMAC (`lib/admin-auth.ts`) |
+| Seed & cadangan | `src/data/products.ts` & `data/categories.ts` — dipakai untuk mengisi database dan sebagai fallback kalau database tidak bisa dihubungi |
+| Deploy | Vercel / Node.js (statis + halaman dinamis) |
 
 ---
 
@@ -164,8 +240,40 @@ npm start        # jalankan hasil build
 npm run lint     # ESLint
 ```
 
-Tidak ada variabel environment yang dibutuhkan — semua konfigurasi toko ada di
-`src/data/store.ts`.
+### Variabel environment
+
+Buat `.env.local` (sudah di-`gitignore`) — nilainya bisa dilihat di dashboard
+Supabase & Cloudinary masing-masing:
+
+```ini
+# Supabase (Project Settings → API)
+NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ…
+SUPABASE_SERVICE_ROLE_KEY=eyJ…          # HANYA di server, jangan pernah diekspos ke klien
+
+# Cloudinary (Dashboard → Product Environment Credentials)
+CLOUDINARY_CLOUD_NAME=xxxx
+CLOUDINARY_API_KEY=123456789012345
+CLOUDINARY_API_SECRET=xxxx
+
+# Dashboard admin
+ADMIN_PASSWORD=pilih-password-panjang
+ADMIN_SESSION_SECRET=teks-acak-panjang  # buat dengan: openssl rand -hex 32
+```
+
+Semua variabel di atas juga harus ada di **Vercel → Settings → Environment Variables**
+(production & preview) supaya dashboard jalan di situs yang sudah deploy.
+
+### Menyiapkan database
+
+Jalankan `supabase/schema.sql` sekali di **SQL Editor Supabase** (atau lewat
+Management API). Berkas itu aman dijalankan berulang: tabel, kolom tambahan, indeks,
+trigger `updated_at`, dan RLS semuanya memakai `if not exists` / `create or replace`.
+
+Kalau database masih kosong, situs tetap tampil memakai data statis di `src/data/`
+(lihat `lib/catalog.ts`) — jadi tidak ada halaman blank saat setup belum lengkap.
+
+---
 
 ---
 
@@ -190,18 +298,30 @@ src/
 │     ├─ store.css            # tema store, di-scope ke `.store`
 │     ├─ produk/
 │     │  ├─ page.tsx          # katalog + filter dari search params
-│     │  └─ [slug]/page.tsx   # detail produk (SSG via generateStaticParams)
+│     │  └─ [slug]/page.tsx   # detail produk (ISR 5 menit, disegarkan dari admin)
 │     ├─ keranjang/page.tsx   # keranjang (isi dari localStorage)
 │     ├─ checkout/
 │     │  ├─ page.tsx          # formulir data pembeli + ringkasan
 │     │  └─ selesai/page.tsx  # konfirmasi pesanan
 │     └─ bantuan/page.tsx     # pusat bantuan
 │
+│  ├─ (admin)/admin/          # dashboard admin (tanpa chrome situs)
+│  │  ├─ masuk/page.tsx       # gerbang password
+│  │  └─ (panel)/             # semua halaman yang butuh sesi
+│  │     ├─ layout.tsx        # penjagaan sesi + kerangka (sidebar, konten)
+│  │     ├─ page.tsx          # dasbor: statistik + pesanan terbaru
+│  │     ├─ produk/           # daftar, tambah, edit (+ hapus) produk
+│  │     ├─ kategori/         # kelola kategori & urutannya
+│  │     └─ pesanan/          # daftar pesanan, detail, catat pembayaran
+│  │
+│  └─ actions/                # server action: admin.ts (tulis) & pesanan.ts (checkout)
+│
 ├─ components/
 │  ├─ layout/                 # header, footer, tab bar mobile
 │  ├─ home/                   # section khusus beranda
 │  ├─ cart/                   # keranjang: hook, tombol, daftar, form checkout
 │  ├─ store/                  # komponen katalog & detail produk
+│  ├─ admin/                  # dashboard: kerangka, formulir produk, tabel, tombol
 │  ├─ kebijakan/              # kerangka dokumen kebijakan
 │  └─ ui/                     # komponen kecil yang dipakai ulang
 │
@@ -211,23 +331,31 @@ src/
 │  ├─ products/               # foto produk
 │  └─ brands/                 # logo RESMI tiap plugin (dipakai apa adanya)
 │
-├─ data/                      # SEMUA konten & daftar produk
+├─ data/                      # konten halaman + data awal (seed) katalog
 │  ├─ site.ts                 # hero, statistik, trust bar, CTA
 │  ├─ navigation.ts           # menu header, kolom footer, social media
-│  ├─ categories.ts           # daftar kategori
-│  ├─ products.ts             # produk: harga, versi, spesifikasi, FAQ
+│  ├─ categories.ts           # kategori awal (dipakai untuk mengisi database)
+│  ├─ products.ts             # produk awal — dipakai sebagai seed & fallback
 │  ├─ reviews.ts              # ulasan per produk + sebaran bintang
 │  ├─ store.ts                # nomor WhatsApp + teks katalog & buy box
 │  ├─ about.ts, support.ts    # copy halaman Tentang & Bantuan
 │  ├─ policies.ts             # isi 4 dokumen kebijakan
 │  └─ ...
 │
-├─ lib/                       # helper: cn, format Rupiah/angka, link WhatsApp
+├─ lib/                       # helper: cn, format, link WhatsApp, katalog, Cloudinary, Supabase
 └─ types/                     # tipe data bersama
+
+supabase/
+└─ schema.sql                 # tabel, indeks, trigger updated_at, RLS (jalankan sekali)
+
+public/
+├─ brands/                    # logo resmi plugin (dipakai muka box produk)
+└─ products/                  # foto produk
 ```
 
-Prinsipnya: **komponen mengurus tampilan, folder `data/` mengurus isi.** Mengubah
-teks atau menambah produk hampir selalu tidak perlu menyentuh komponen.
+Prinsipnya: **komponen mengurus tampilan, database mengurus isi.** Teks jualan
+(bukan katalog) tetap di `src/data/` supaya satu klaim hanya hidup di satu tempat;
+sedangkan produk & kategori diubah dari dashboard admin.
 
 ---
 
@@ -235,12 +363,12 @@ teks atau menambah produk hampir selalu tidak perlu menyentuh komponen.
 
 | Route | Rendering | Keterangan |
 | --- | --- | --- |
-| `/` | Static | Beranda brand MODIGI |
+| `/` | Static + revalidate | Beranda brand MODIGI (disertakan data katalog terbaru) |
 | `/tentang` | Static | Cerita, keunggulan, cara kerja, prinsip |
-| `/produk` | Dynamic (search params) | Katalog + filter kategori/pencarian/urutan |
-| `/produk/[slug]` | **SSG** | Detail produk — 1 halaman per produk, dibangun saat build |
+| `/produk` | Dynamic | Katalog + filter kategori/pencarian/urutan, dibaca dari database |
+| `/produk/[slug]` | **ISR (5 menit)** | Detail produk — disegarkan langsung saat produknya diedit di dashboard |
 | `/bantuan` | Static | Pusat bantuan (6 section ber-anchor) |
-| `/kategori` | Static | Kategori + produk per kategori, dihitung dari data |
+| `/kategori` | Static + revalidate | Kategori + produk per kategori, dihitung dari database |
 | `/keranjang` | Static + klien | Isi keranjang dari `localStorage` (tidak diindeks) |
 | `/checkout` | Static + klien | Formulir data pembeli + ringkasan pesanan (tidak diindeks) |
 | `/checkout/selesai` | Static + klien | Konfirmasi pesanan terakhir (tidak diindeks) |
@@ -260,8 +388,11 @@ teks atau menambah produk hampir selalu tidak perlu menyentuh komponen.
 | Warna, radius, shadow, font | `src/app/globals.css` (blok `@theme`) |
 | Teks hero, statistik, trust bar, CTA | `src/data/site.ts` |
 | Menu header & link footer | `src/data/navigation.ts` |
-| Tambah/edit produk | `src/data/products.ts` |
-| Tambah/edit kategori | `src/data/categories.ts` |
+| **Produk** (harga, foto, isi halaman) | **`/admin/produk`** — dashboard, tanpa deploy |
+| **Kategori** | **`/admin/kategori`** |
+| **Pesanan & pembayaran** | **`/admin/pesanan`** |
+| Produk awal (seed) / kalau database mati | `src/data/products.ts` |
+| Kategori awal (seed) | `src/data/categories.ts` |
 | **Ulasan pembeli** | `src/data/reviews.ts` (produk tanpa data ulasan otomatis tidak menampilkan section) |
 | **Nomor WhatsApp toko** | `src/data/store.ts` → `whatsappNumber` |
 | Teks katalog, buy box, poin trust | `src/data/store.ts` |
@@ -273,6 +404,14 @@ teks atau menambah produk hampir selalu tidak perlu menyentuh komponen.
 | Tema halaman store (cream/hijau) | `src/app/(store)/store.css` |
 
 ### Menambah produk
+
+Cara normal: buka **`/admin/produk/baru`**, isi formulirnya, lalu **Simpan**. Foto
+produk dan logo resminya diunggahkan ke Cloudinary dari formulir yang sama. Produk
+baru langsung tayang di katalog, beranda, halaman kategori, dan punya halaman
+detailnya sendiri — semuanya tanpa deploy.
+
+Kalau mau menambah lewat kode (mis. saat menyiapkan database baru), bentuknya seperti
+ini — setelah itu jalankan seed supaya masuk ke database:
 
 ```ts
 // src/data/products.ts
@@ -346,8 +485,12 @@ Beberapa keputusan yang sengaja diambil, dan alasannya:
 4. **Logo brand pihak ketiga dipakai apa adanya** (tidak di-recolor, tidak digambar
    ulang) dan diambil dari kanal resmi vendor. Warna box disesuaikan lewat properti
    `tone` supaya logonya tetap kontras, bukan logonya yang diubah.
-5. **Halaman produk ter-prerender** dengan `generateStaticParams`, plus metadata
-   (`title`, `description`, Open Graph) per produk.
+5. **Katalog dibaca dari database, dengan cadangan statis.** `lib/catalog.ts`
+   mengambil produk & kategori dari Supabase, dan kalau databasenya belum diisi
+   atau tidak bisa dihubungi, yang tampil adalah isi `src/data/products.ts` — jadi
+   tidak ada halaman kosong. Query-nya dibungkus `cache()` React supaya satu request
+   tidak menembak database berkali-kali hanya karena layout, kartu, dan drawer
+   meminta data yang sama.
 6. **Klaim & copy dipisah dari komponen.** Semua teks jualan ada di `src/data/`,
    memakai aturan: satu klaim hanya punya satu nilai di seluruh situs.
 7. **UI diverifikasi dengan pengukuran**, bukan perkiraan: Chrome headless dipakai
@@ -369,17 +512,20 @@ Beberapa keputusan yang sengaja diambil, dan alasannya:
    Status buka/tutup drawer juga store terpisah (`useCartDrawer`), supaya tombol di
    halaman produk, ikon di header, dan FAB di tab bar mobile bisa membuka panel yang
    sama tanpa saling mengirim prop.
-10. **Checkout tanpa backend.** Pesanan disimpan di `localStorage` (untuk halaman
-   konfirmasi) dan salinannya dikirim ke WhatsApp admin. Ini jujur terhadap kondisi
-   sekarang: tidak ada server yang menampung data pembeli, dan tidak ada nomor
-   rekening palsu yang ditampilkan di halaman konfirmasi — rincian pembayaran tetap
-   dikirim admin lewat chat.
-11. **Password WP-Admin TIDAK disimpan di browser.** Formulir checkout meminta
+10. **Checkout tidak pernah gagal karena server.** Pesanan disimpan di
+   `localStorage` (dibaca halaman konfirmasi), dikirim ke WhatsApp admin, dan
+   **juga** dicatat ke database lewat server action `buatPesananAction`. Pencatatan
+   ke database sengaja tidak ditunggu: WhatsApp adalah jalur utama pesanannya, jadi
+   kalau penyimpanan di server bermasalah, pembeli tetap bisa menyelesaikan order.
+   Halaman konfirmasi tetap tidak menampilkan nomor rekening karangan — rincian
+   pembayaran dikirim admin lewat chat.
+11. **Password WP-Admin tidak disimpan di mana pun.** Formulir checkout meminta
    kredensial WP-Admin (dipakai admin untuk memasang pluginnya), tapi
-   `createOrder()` sengaja tidak memasukkannya ke objek pesanan — password hanya ada
-   di memori form, ikut ke pesan WhatsApp, lalu dibuang dari state. Halaman
-   konfirmasi menampilkan username tanpa passwordnya dan menyebutkan alasannya,
-   dan formulir memberi catatan agar password diganti setelah plugin terpasang.
+   `createOrder()` sengaja tidak memasukkannya ke objek pesanan, dan tabel `orders`
+   memang **tidak punya kolomnya** (lihat `supabase/schema.sql`). Password hanya ada
+   di memori form, ikut ke pesan WhatsApp, lalu dibuang dari state. Dashboard admin
+   pun tidak menampilkannya — yang tersimpan hanya username. Halaman konfirmasi & 
+   formulir memberi catatan agar password diganti setelah plugin terpasang.
    Kalau keamanan jadi prioritas, langkah berikutnya adalah akun WP sementara atau
    tautan instalasi sekali-pakai — sudah masuk daftar di bawah.
 12. **Drawer keranjang memakai `inert` saat tertutup.** Panel yang cuma digeser ke
@@ -392,6 +538,27 @@ Beberapa keputusan yang sengaja diambil, dan alasannya:
    objek + satu `page.tsx` sebaris. Navigasi (pindah dokumen & daftar isi) memakai
    `<details>` di mobile, jadi seluruh halaman jalan tanpa JavaScript, dan setiap
    bagian diberi nomor supaya bisa dirujuk ("lihat bagian 4").
+14. **Harga di keranjang datang dari server, bukan dari data statis.** Keranjang
+   hanya menyimpan `slug` + jumlah, sedangkan harga & artwork-nya dikirim server
+   lewat `<CatalogSync />` (satu `<div hidden>`, bukan provider/context). Jadi
+   setelah admin mengubah harga di dashboard, isi keranjang pembeli ikut memakai
+   harga baru — tidak ada harga lama yang tertinggal di browser. Selama ringkasan
+   itu belum sampai, halaman keranjang menampilkan kerangka (bukan harga tebakan).
+15. **Satu password untuk dashboard, sesi di cookie bertanda tangan.** Produk ini
+   hanya punya satu pengelola, jadi tabel user + reset password hanya menambah hal
+   yang bisa bocor tanpa menambah keamanan nyata. Sesi = cookie httpOnly berisi
+   `kedaluwarsa.tandaTangan` (HMAC-SHA256, 12 jam), dan **setiap server action
+   memeriksa sesi sendiri** — Server Action bisa dipanggil tanpa melewati tampilan,
+   jadi penjagaan tidak boleh hanya ada di halaman.
+16. **Unggah Cloudinary tanpa SDK.** Yang dibutuhkan cuma dua panggilan REST
+   (upload & destroy) dengan signature SHA-1 dari `node:crypto`, jadi tidak ada
+   dependensi tambahan yang perlu dirawat. `public_id` setiap gambar disimpan di
+   database supaya berkas lama ikut dihapus saat diganti — tanpa itu, kuota
+   Cloudinary menumpuk tanpa terasa.
+17. **`revalidate` + `revalidatePath` untuk halaman produk.** Pengunjung dilayani
+   dari cache (bukan query database tiap kali halaman dibuka), tapi begitu admin
+   menyimpan perubahan, halaman terkait disegarkan saat itu juga — jadi tidak ada
+   jeda "kok belum berubah?" setelah edit.
 
 ---
 
@@ -403,7 +570,10 @@ Semuanya sudah ditandai `← PERLU DIPUTUSKAN` di `src/data/policies.ts`:
 
 | Hal | Nilai sekarang | Ada di |
 | --- | --- | --- |
-| **Kredensial WP-Admin** | Diminta di checkout lalu dikirim lewat WhatsApp | `data/store.ts` → `checkoutCopy.passwordNote` |
+| **Kredensial WP-Admin** | Diminta di checkout lalu dikirim lewat WhatsApp (tidak disimpan) | `data/store.ts` → `checkoutCopy.passwordNote` |
+| **Password dashboard admin** | `ADMIN_PASSWORD` di environment variable — ganti dari nilai contoh | Vercel & `.env.local` |
+| **Data pesanan tersimpan di server** | Ya: nama, WhatsApp, domain, username WP-Admin, item, pembayaran | Supabase (`orders`, `order_items`, `payments`) |
+| **Pihak yang menyimpan data** | Supabase (database), Cloudinary (foto produk), WhatsApp (chat) | Kebijakan Privasi → "Siapa lagi yang bisa melihat data Anda" |
 | Identitas badan hukum & alamat | **belum dicantumkan** — hanya brand MODIGI | seluruh dokumen |
 | Lama penyimpanan data pesanan | 12 bulan setelah masa aktif | Kebijakan Privasi → “Berapa lama data disimpan” |
 | SLA permintaan data pembeli | balasan 1×24 jam, proses maks. 7 hari kerja | Kebijakan Privasi → “Hak Anda” |
@@ -424,10 +594,15 @@ Nomor WhatsApp, email (`halo@modigi.id`), jam operasional, dan seluruh angka kla
 - [x] **Halaman `/checkout`** — data pembeli + domain, ringkasan, persetujuan lisensi
 - [x] **Konfirmasi pesanan** — nomor pesanan, rincian, langkah pembayaran
 - [x] **Halaman `/kategori` & `/testimoni`** — semua tautan header & footer hidup
+- [x] **Dashboard admin** — produk, kategori, pesanan, pembayaran, unggah Cloudinary
+- [x] **Database** — katalog & pesanan pindah dari data statis ke Supabase
 - [ ] **Payment gateway** — QRIS/transfer otomatis, bukan konfirmasi manual di chat
-- [ ] **Backend/CMS** untuk produk, pesanan, dan pengiriman lisensi otomatis
-- [ ] **Akun pelanggan** — riwayat lisensi, perpanjangan (tombol "Masuk" masih
+- [ ] **Bukti transfer dari pembeli** — sampai sekarang admin yang mencatat pembayaran
+- [ ] **Akun pelanggan** — riwayat lisensi & perpanjangan (tombol "Masuk" masih
       mengarah ke `/masuk` yang belum ada)
+- [ ] **Beberapa pengguna admin** — sekarang satu password; langkah berikutnya
+      Supabase Auth dengan peran (owner/staf)
+- [ ] **Pengingat masa aktif lisensi** — email/WhatsApp otomatis sebelum 1 tahun habis
 - [ ] **Blog/artikel** untuk kebutuhan SEO
 
 ---

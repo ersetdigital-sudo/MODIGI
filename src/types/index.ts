@@ -83,10 +83,23 @@ export type Product = {
   specs: ProductSpec[];
   /** FAQ produk (tab "FAQ"). */
   faq: ProductFaq[];
-  /** Testimoni pembeli. */
-  testimonial: { text: string; by: string };
+  /**
+   * Testimoni pembeli. Opsional — produk yang ditambah dari dashboard hanya
+   * menampilkannya kalau datanya diisi.
+   */
+  testimonial?: { text: string; by: string };
   art: ProductArt;
 };
+
+/**
+ * Bagian produk yang dibutuhkan keranjang di browser.
+ *
+ * Situs depan mengambil katalog dari database, sedangkan keranjang dibaca dari
+ * `localStorage`. Supaya harga di keranjang tidak pernah basi, server mengirim
+ * ringkasan ini ke browser (lihat <CatalogSync />) dan `toLines` mencocokkan isi
+ * keranjang dengan ringkasan TERBARU itu — bukan dengan data statis.
+ */
+export type CartProduct = Pick<Product, "slug" | "name" | "price" | "compareAt" | "art">;
 
 /** Satu ulasan pembeli di halaman detail produk. */
 export type ProductReview = {
@@ -127,7 +140,7 @@ export type CartItem = {
 export type CartLine = {
   slug: string;
   qty: number;
-  product: Product;
+  product: CartProduct;
   /** `product.price` × `qty`. */
   subtotal: number;
 };

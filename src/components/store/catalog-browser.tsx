@@ -4,15 +4,25 @@ import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { StoreProductCard } from "@/components/store/product-card";
-import { getCategoryName } from "@/data/categories";
 import { catalogCopy, sortOptions, type SortValue } from "@/data/store";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types";
 
 const ALL = "all";
 
+/** Nama kategori: dari server kalau ada, kalau tidak ya slug-nya. */
+function nama(daftar: Record<string, string>, slug: string) {
+  return daftar[slug] ?? slug;
+}
+
 type CatalogBrowserProps = {
   products: Product[];
+  /**
+   * slug → nama kategori, dikirim dari server (halaman katalog). Dipakai untuk
+   * chip filter dan label kartu, supaya kategori yang dibuat di dashboard ikut
+   * terbaca namanya — bukan slug mentahnya.
+   */
+  categoryNames?: Record<string, string>;
   /** Nilai awal dari URL (`?q=`, `?kategori=`, `?urut=`) — dibaca di server. */
   initialQuery?: string;
   initialCategory?: string;
@@ -28,6 +38,7 @@ type CatalogBrowserProps = {
  */
 export function CatalogBrowser({
   products,
+  categoryNames = {},
   initialQuery = "",
   initialCategory = ALL,
   initialSort = "pop",
@@ -40,14 +51,14 @@ export function CatalogBrowser({
   const chips = useMemo(() => {
     const slugs = [...new Set(products.map((product) => product.categorySlug))];
 
-    return slugs.map((slug) => ({ slug, name: getCategoryName(slug) }));
-  }, [products]);
+    return slugs.map((slug) => ({ slug, name: nama(categoryNames, slug) }));
+  }, [products, categoryNames]);
 
   const list = useMemo(() => {
     const keyword = query.trim().toLowerCase();
 
     const filtered = products.filter((product) => {
-      const categoryName = getCategoryName(product.categorySlug);
+      const categoryName = nama(categoryNames, product.categorySlug);
       const matchCategory =
         category === ALL ||
         product.categorySlug === category ||
@@ -65,7 +76,7 @@ export function CatalogBrowser({
     if (sort === "pop") sorted.sort((a, b) => b.sold - a.sold);
 
     return sorted;
-  }, [products, category, query, sort]);
+  }, [products, categoryNames, category, query, sort]);
 
   return (
     <section className="mx-auto max-w-6xl px-5">
@@ -138,7 +149,11 @@ export function CatalogBrowser({
       {list.length > 0 ? (
         <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
           {list.map((product) => (
-            <StoreProductCard key={product.slug} product={product} />
+            <StoreProductCard
+              key={product.slug}
+              product={product}
+              categoryName={nama(categoryNames, product.categorySlug)}
+            />
           ))}
         </div>
       ) : (

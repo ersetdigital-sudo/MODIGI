@@ -3,9 +3,8 @@ import Link from "next/link";
 
 import { CatalogBrowser } from "@/components/store/catalog-browser";
 import { WhatsappIcon } from "@/components/store/whatsapp-icon";
-import { getCategoryName } from "@/data/categories";
-import { products } from "@/data/products";
 import { catalogCopy, sortOptions, type SortValue } from "@/data/store";
+import { ambilKategori, ambilProduk } from "@/lib/catalog";
 import { whatsappLink } from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
@@ -29,11 +28,17 @@ function firstValue(value: string | string[] | undefined) {
 export default async function KatalogPage(props: PageProps<"/produk">) {
   const searchParams = await props.searchParams;
 
+  // Produk & kategori dibaca dari database (cadangan: data statis), jadi katalog
+  // selalu menampilkan apa yang sedang aktif di dashboard admin.
+  const [products, kategoriDaftar] = await Promise.all([ambilProduk(), ambilKategori()]);
+  const categoryNames = Object.fromEntries(
+    kategoriDaftar.map((item) => [item.slug, item.name]),
+  );
+
   const kategori = firstValue(searchParams.kategori);
   const urut = firstValue(searchParams.urut);
 
-  const initialCategory =
-    kategori && getCategoryName(kategori) !== kategori ? kategori : undefined;
+  const initialCategory = kategori && categoryNames[kategori] ? kategori : undefined;
   const initialSort = sortOptions.some((option) => option.value === urut)
     ? (urut as SortValue)
     : undefined;
@@ -60,6 +65,7 @@ export default async function KatalogPage(props: PageProps<"/produk">) {
 
       <CatalogBrowser
         products={products}
+        categoryNames={categoryNames}
         initialQuery={firstValue(searchParams.q)}
         initialCategory={initialCategory}
         initialSort={initialSort}

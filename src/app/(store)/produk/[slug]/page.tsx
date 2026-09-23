@@ -13,17 +13,23 @@ import { StoreProductCard } from "@/components/store/product-card";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
 import { WhatsappIcon } from "@/components/store/whatsapp-icon";
 import { PluginBoxArt } from "@/components/ui/plugin-box-art";
-import { getCategoryName } from "@/data/categories";
-import { getProduct, products } from "@/data/products";
 import { orderSteps, productStatsCopy, secondOpinion } from "@/data/store";
+import { ambilKategori, ambilProduk, ambilProdukBySlug } from "@/lib/catalog";
 import { formatCompact, formatRating, formatRupiah } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { whatsappLink } from "@/lib/whatsapp";
 
-/** Prerender semua halaman produk saat build (slug-nya sudah kita tahu). */
-export function generateStaticParams() {
-  return products.map((product) => ({ slug: product.slug }));
-}
+/**
+ * Halaman produk di-cache 5 menit lalu disegarkan langsung dari dashboard admin.
+ *
+ * Server action admin memanggil `revalidatePath('/produk/<slug>')`, jadi perubahan
+ * produk langsung terlihat tanpa menunggu — sementara pengunjung tetap dilayani
+ * dari cache (bukan query database baru setiap kali halaman dibuka).
+ *
+ * Slug produk baru tidak perlu ada di build: halaman pertamanya dirender saat
+ * diminta, lalu ikut ter-cache.
+ */
+export const revalidate = 300;
 
 /**
  * Satu kartu statistik di bawah judul produk.
@@ -68,7 +74,7 @@ export async function generateMetadata(
   props: PageProps<"/produk/[slug]">,
 ): Promise<Metadata> {
   const { slug } = await props.params;
-  const product = getProduct(slug);
+  const product = await ambilProdukBySlug(slug);
 
   if (!product) return { title: "Produk tidak ditemukan" };
 
@@ -92,12 +98,18 @@ export async function generateMetadata(
  */
 export default async function ProductDetailPage(props: PageProps<"/produk/[slug]">) {
   const { slug } = await props.params;
-  const product = getProduct(slug);
+
+  const [product, semuaProduk, kategori] = await Promise.all([
+    ambilProdukBySlug(slug),
+    ambilProduk(),
+    ambilKategori(),
+  ]);
 
   if (!product) notFound();
 
+  const namaKategori = new Map(kategori.map((item) => [item.slug, item.name]));
   const glow = product.art.accent ?? product.art.to;
-  const related = products.filter((item) => item.slug !== product.slug).slice(0, 4);
+  const related = semuaProduk.filter((item) => item.slug !== product.slug).slice(0, 4);
 
   return (
     <div className="pb-24 lg:pb-0">
@@ -132,7 +144,9 @@ export default async function ProductDetailPage(props: PageProps<"/produk/[slug]
             </div>
 
             <div className="mt-7">
-              <span className="kicker block">{getCategoryName(product.categorySlug)}</span>
+              <span className="kicker block">
+                {namaKategori.get(product.categorySlug) ?? product.categorySlug}
+              </span>
 
               {/* Badge verifikasi duduk di samping nama produk, seperti di marketplace. */}
               <h1 className="mt-2.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[30px] font-extrabold leading-[1.1] tracking-[-0.03em] md:text-[42px]">
@@ -234,7 +248,11 @@ export default async function ProductDetailPage(props: PageProps<"/produk/[slug]
 
           <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {related.map((item) => (
-              <StoreProductCard key={item.slug} product={item} />
+              <StoreProductCard
+                key={item.slug}
+                product={item}
+                categoryName={namaKategori.get(item.categorySlug)}
+              />
             ))}
           </div>
         </section>

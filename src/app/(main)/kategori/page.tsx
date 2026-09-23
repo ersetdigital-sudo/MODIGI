@@ -6,9 +6,8 @@ import { buttonClass } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { StarRating } from "@/components/ui/star-rating";
-import { categories } from "@/data/categories";
 import { kategoriCta, kategoriHero, kategoriKosong, kategoriSections } from "@/data/kategori";
-import { products } from "@/data/products";
+import { ambilKategori, ambilProduk } from "@/lib/catalog";
 import { formatRupiah } from "@/lib/format";
 import { whatsappLink } from "@/lib/whatsapp";
 
@@ -21,12 +20,14 @@ export const metadata: Metadata = {
 /**
  * Halaman Kategori (/kategori) — tujuan link "Kategori" di menu header & footer.
  *
- * Isinya dihitung dari `categories.ts` + `products.ts`, jadi menambah produk atau
- * kategori tidak perlu menyentuh file ini. Kategori yang belum punya produk tetap
- * ditampilkan (dengan label "Belum ada produk") supaya tidak ada link yang
- * mengarah ke hasil pencarian kosong tanpa penjelasan.
+ * Isinya dihitung dari kategori & produk di database, jadi menambah produk atau
+ * kategori lewat dashboard tidak perlu menyentuh file ini. Kategori yang belum
+ * punya produk tetap ditampilkan (dengan label "Belum ada produk") supaya tidak
+ * ada link yang mengarah ke hasil pencarian kosong tanpa penjelasan.
  */
-export default function KategoriPage() {
+export default async function KategoriPage() {
+  const [categories, products] = await Promise.all([ambilKategori(), ambilProduk()]);
+
   const groups = categories.map((category) => {
     const items = products.filter((product) => product.categorySlug === category.slug);
 

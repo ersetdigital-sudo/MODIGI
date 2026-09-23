@@ -9,6 +9,8 @@ import {
   getCartDrawerSnapshot,
   getCartServerSnapshot,
   getCartSnapshot,
+  getKatalogServerSnapshot,
+  getKatalogSnapshot,
   getOrderServerSnapshot,
   getOrderSnapshot,
   normalizeQty,
@@ -16,6 +18,7 @@ import {
   setCartDrawer,
   subscribeCart,
   subscribeCartDrawer,
+  subscribeKatalog,
   subscribeOrder,
   summarize,
   toLines,
@@ -42,9 +45,12 @@ const falseDiServer = () => false;
  */
 export function useCart() {
   const items = useSyncExternalStore(subscribeCart, getCartSnapshot, getCartServerSnapshot);
-  const ready = useSyncExternalStore(subscribeNihil, trueDiKlien, falseDiServer);
+  const diKlien = useSyncExternalStore(subscribeNihil, trueDiKlien, falseDiServer);
 
-  const lines = useMemo(() => toLines(items), [items]);
+  // Katalog (harga terbaru dari database) datang dari server lewat <CatalogSync />.
+  const katalog = useSyncExternalStore(subscribeKatalog, getKatalogSnapshot, getKatalogServerSnapshot);
+
+  const lines = useMemo(() => toLines(items, katalog), [items, katalog]);
   const ringkasan = useMemo(() => summarize(lines), [lines]);
 
   const add = useCallback((product: Product, qty = 1) => {
@@ -75,7 +81,12 @@ export function useCart() {
     count: countItems(items),
     total: ringkasan.total,
     savings: ringkasan.savings,
-    ready,
+    /**
+     * Baru `true` kalau keranjang DAN katalog sudah terbaca di browser.
+     * Tanpa syarat kedua, keranjang bisa menampilkan harga basi sesaat sebelum
+     * katalog dari server sampai.
+     */
+    ready: diKlien && katalog.length > 0,
     add,
     setQty,
     remove,

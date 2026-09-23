@@ -4,9 +4,15 @@ import Link from "next/link";
 import { CategoryCard } from "@/components/ui/category-card";
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { categories } from "@/data/categories";
+import { ambilKategori } from "@/lib/catalog";
 
-export function CategoryShowcase() {
+/**
+ * Baris kategori di beranda — urutannya mengikuti `sort_order` yang diatur admin,
+ * jadi menambah/menggeser kategori di dashboard langsung terlihat di sini.
+ */
+export async function CategoryShowcase() {
+  const categories = await ambilKategori();
+
   return (
     <section className="pt-8 pb-4 lg:py-16">
       <Container>

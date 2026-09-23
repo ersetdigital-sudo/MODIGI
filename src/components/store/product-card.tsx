@@ -19,8 +19,20 @@ import type { Product } from "@/types";
  * Ukuran media & artwork ikut membesar lewat breakpoint, jadi kartu tetap proporsional
  * dari grid 2 kolom (mobile) sampai 4 kolom (desktop).
  */
-export function StoreProductCard({ product, className }: { product: Product; className?: string }) {
-  const categoryName = getCategoryName(product.categorySlug);
+export function StoreProductCard({
+  product,
+  className,
+  categoryName: namaDariServer,
+}: {
+  product: Product;
+  className?: string;
+  /**
+   * Nama kategori dari database. Kalau tidak dikirim, dipakai daftar kategori
+   * statis — cadangan untuk kategori yang isinya belum ada di database.
+   */
+  categoryName?: string;
+}) {
+  const categoryName = namaDariServer ?? getCategoryName(product.categorySlug);
 
   return (
     <Link

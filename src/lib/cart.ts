@@ -1,6 +1,5 @@
-import { getProduct } from "@/data/products";
 import { formatCompact, formatRupiah } from "@/lib/format";
-import type { CartItem, CartLine, Customer, Order, OrderItem } from "@/types";
+import type { CartItem, CartLine, CartProduct, Customer, Order, OrderItem } from "@/types";
 
 /**
  * Isi keranjang & pesanan — semuanya di browser.
@@ -47,12 +46,16 @@ export function normalizeItems(items: CartItem[]): CartItem[] {
 }
 
 /**
- * Cocokkan isi keranjang dengan katalog.
- * Slug yang sudah tidak ada di katalog otomatis dibuang (produk dihapus/diganti).
+ * Cocokkan isi keranjang dengan katalog yang sedang berlaku.
+ *
+ * `daftar` datang dari server (lewat <CatalogSync />), jadi harga di keranjang
+ * selalu sama dengan harga yang tampil di katalog — termasuk setelah admin
+ * mengubah harga dari dashboard. Slug yang sudah tidak ada di katalog otomatis
+ * dibuang (produk dihapus atau dijadikan draft).
  */
-export function toLines(items: CartItem[]): CartLine[] {
+export function toLines(items: CartItem[], daftar: CartProduct[]): CartLine[] {
   return normalizeItems(items).flatMap(({ slug, qty }) => {
-    const product = getProduct(slug);
+    const product = daftar.find((item) => item.slug === slug);
     if (!product) return [];
 
     return [{ slug, qty, product, subtotal: product.price * qty }];
@@ -194,6 +197,48 @@ export function clearCart() {
   }
 
   window.dispatchEvent(new Event(CART_EVENT));
+}
+
+// ---------------------------------------------------------------------------
+// Katalog di memori tab
+// ---------------------------------------------------------------------------
+
+/**
+ * Ringkasan katalog yang sedang berlaku (dikirim server lewat <CatalogSync />).
+ *
+ * Disimpan sebagai store eksternal — bukan context — supaya setiap komponen yang
+ * memakai `useCart()` ikut ter-render begitu katalognya sampai di browser, tanpa
+ * perlu membungkus aplikasi dengan provider.
+ */
+export const KATALOG_EVENT = "modigi:katalog-berubah";
+
+let katalog: CartProduct[] = [];
+
+/** Katalog kosong yang referensinya tetap (dipakai server & hidrasi). */
+export const katalogKosong: CartProduct[] = [];
+
+export function setKatalog(daftar: CartProduct[]) {
+  if (!adaWindow()) return;
+
+  katalog = daftar;
+  window.dispatchEvent(new Event(KATALOG_EVENT));
+}
+
+export function getKatalogSnapshot(): CartProduct[] {
+  return katalog;
+}
+
+/** Server: kosong & stabil, ditandai oleh `ready` di `useCart()`. */
+export function getKatalogServerSnapshot(): CartProduct[] {
+  return katalogKosong;
+}
+
+export function subscribeKatalog(callback: () => void) {
+  if (!adaWindow()) return () => {};
+
+  window.addEventListener(KATALOG_EVENT, callback);
+
+  return () => window.removeEventListener(KATALOG_EVENT, callback);
 }
 
 // ---------------------------------------------------------------------------

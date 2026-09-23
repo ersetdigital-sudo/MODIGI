@@ -1,26 +1,54 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ==========================================================================
+   Design token MODIGI
+   Semua warna, font, dan shadow didefinisikan di satu tempat. Kalau mau
+   mengubah tema, cukup ubah nilainya di sini — seluruh komponen otomatis ikut.
+   ========================================================================== */
+@theme {
+  /* Warna dasar */
+  --color-ink: #0b0b0c;
+  --color-ink-800: #131315;
+  --color-ink-700: #1b1b1e;
+
+  --color-cream: #f7f3ec;
+  --color-cream-200: #efe9dd;
+  --color-sand: #ece3d2;
+
+  /* Garis / border */
+  --color-line: #e7dfd1;
+  --color-line-dark: #2b2b2e;
+
+  /* Teks sekunder */
+  --color-muted: #6f675b;
+  --color-muted-dark: #a2a2a6;
+
+  /* Aksen emas */
+  --color-gold: #c9a664;
+  --color-gold-soft: #e2cb9c;
+  --color-gold-deep: #a3803c;
+
+  /* Tipografi */
+  --font-sans: var(--font-plus-jakarta-sans), ui-sans-serif, system-ui, sans-serif;
+
+  /* Elevasi */
+  --shadow-card: 0 1px 2px rgb(23 20 14 / 0.04), 0 10px 30px -18px rgb(23 20 14 / 0.25);
+  --shadow-lift: 0 2px 4px rgb(23 20 14 / 0.06), 0 18px 40px -20px rgb(23 20 14 / 0.35);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  body {
+    background-color: var(--color-cream);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+
+  ::selection {
+    background-color: var(--color-gold-soft);
+    color: var(--color-ink);
+  }
 }

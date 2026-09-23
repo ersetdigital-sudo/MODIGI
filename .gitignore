@@ -39,3 +39,18 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ----------------------------------------------------------------------------
+# Tidak ikut ke repo publik
+# ----------------------------------------------------------------------------
+
+# sumber template HTML pihak ketiga (hanya referensi desain saat pengerjaan,
+# tidak dipakai saat runtime — temanya sudah dipindah ke (store)/store.css)
+/katalog-plugin-wordpress/
+
+# aset mentah/duplikat di root (versi yang dipakai ada di src/assets/)
+/ChatGPT Image*.png
+/icons8-verified-badge-16.png
+
+# metadata tool lokal
+/.freebuff/

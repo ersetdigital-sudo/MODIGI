@@ -29,6 +29,7 @@ Dibangun dengan **Next.js 16 (App Router)**, **TypeScript**, dan **Tailwind CSS 
 - [Mengubah Konten](#mengubah-konten)
 - [Sistem Desain](#sistem-desain)
 - [Catatan Teknis](#catatan-teknis)
+- [Yang Perlu Diputuskan Sebelum Dipakai](#yang-perlu-diputuskan-sebelum-dipakai)
 - [Roadmap](#roadmap)
 - [Lisensi](#lisensi)
 
@@ -55,11 +56,17 @@ lalu baris kategori geser, grid 2 kolom, dan bottom tab bar + tombol keranjang
 
 ![Pusat bantuan MODIGI](docs/preview-support.png)
 
+**Halaman kebijakan** — satu kerangka untuk empat dokumen, dengan daftar isi
+bernomor supaya bagian tertentu gampang dirujuk
+
+![Syarat & Ketentuan MODIGI](docs/preview-kebijakan.png)
+
 | Halaman | Deskripsi singkat |
 | --- | --- |
 | `/` | Hero + pencarian, baris kategori, produk terlaris, trust bar, CTA |
 | `/produk` | Katalog: filter kategori, pencarian, urutan, kartu produk dengan badge diskon |
 | `/produk/[slug]` | Detail: tab informasi, 3 kartu statistik, ulasan, buy box sticky, bar beli mobile |
+| `/kebijakan/*` | Empat dokumen: Syarat & Ketentuan, Privasi, Refund, Lisensi |
 
 ---
 
@@ -144,7 +151,8 @@ src/
 │  ├─ (main)/                 # chrome brand MODIGI (header, footer, tab bar mobile)
 │  │  ├─ layout.tsx
 │  │  ├─ page.tsx             # beranda — hanya menyusun urutan section
-│  │  └─ tentang/page.tsx     # halaman Tentang
+│  │  ├─ tentang/page.tsx     # halaman Tentang
+│  │  └─ kebijakan/           # 4 dokumen kebijakan (satu kerangka yang sama)
 │  │
 │  └─ (store)/                # chrome store (tema cream/hijau)
 │     ├─ layout.tsx
@@ -158,6 +166,7 @@ src/
 │  ├─ layout/                 # header, footer, tab bar mobile
 │  ├─ home/                   # section khusus beranda
 │  ├─ store/                  # komponen katalog & detail produk
+│  ├─ kebijakan/              # kerangka dokumen kebijakan
 │  └─ ui/                     # komponen kecil yang dipakai ulang
 │
 ├─ assets/
@@ -174,6 +183,7 @@ src/
 │  ├─ reviews.ts              # ulasan per produk + sebaran bintang
 │  ├─ store.ts                # nomor WhatsApp + teks katalog & buy box
 │  ├─ about.ts, support.ts    # copy halaman Tentang & Bantuan
+│  ├─ policies.ts             # isi 4 dokumen kebijakan
 │  └─ ...
 │
 ├─ lib/                       # helper: cn, format Rupiah/angka, link WhatsApp
@@ -194,6 +204,10 @@ teks atau menambah produk hampir selalu tidak perlu menyentuh komponen.
 | `/produk` | Dynamic (search params) | Katalog + filter kategori/pencarian/urutan |
 | `/produk/[slug]` | **SSG** | Detail produk — 1 halaman per produk, dibangun saat build |
 | `/bantuan` | Static | Pusat bantuan (6 section ber-anchor) |
+| `/kebijakan/syarat-ketentuan` | Static | Syarat & Ketentuan — 9 bagian |
+| `/kebijakan/privasi` | Static | Kebijakan Privasi — 9 bagian |
+| `/kebijakan/refund` | Static | Refund & Garansi — 7 bagian |
+| `/kebijakan/lisensi` | Static | Lisensi Produk — 8 bagian |
 | `/icon.png`, `/apple-icon.png` | Static | Favicon & ikon home screen iOS |
 
 ---
@@ -211,6 +225,7 @@ teks atau menambah produk hampir selalu tidak perlu menyentuh komponen.
 | **Nomor WhatsApp toko** | `src/data/store.ts` → `whatsappNumber` |
 | Teks katalog, buy box, poin trust | `src/data/store.ts` |
 | Copy halaman Tentang / Bantuan | `src/data/about.ts`, `src/data/support.ts` |
+| **Teks 4 dokumen kebijakan** | `src/data/policies.ts` (satu dokumen = satu objek) |
 | Urutan section beranda | `src/app/(main)/page.tsx` |
 | Tema halaman store (cream/hijau) | `src/app/(store)/store.css` |
 
@@ -250,7 +265,7 @@ Dua identitas visual dalam satu aplikasi, dipisah lewat **route group**:
 | --- | --- | --- |
 | Nuansa | Gelap + cream + emas | Cream + aksen hijau |
 | Token | `@theme` di `globals.css` | Variabel CSS di `store.css` (scope `.store`) |
-| Dipakai di | Beranda, Tentang | Katalog, detail produk, Bantuan |
+| Dipakai di | Beranda, Tentang, Kebijakan | Katalog, detail produk, Bantuan |
 
 **Token global** (`src/app/globals.css`)
 
@@ -258,7 +273,8 @@ Dua identitas visual dalam satu aplikasi, dipisah lewat **route group**:
 | --- | --- |
 | `ink` / `ink-700` | `#0b0b0c` / `#1b1b1e` — latar gelap & teks utama |
 | `cream` / `cream-200` / `sand` | `#f7f3ec` / `#efe9dd` / `#ece3d2` — latar terang |
-| `gold` / `gold-soft` / `gold-deep` | `#c9a664` / `#e2cb9c` / `#a3803c` — aksen brand |
+| `gold` / `gold-soft` / `gold-deep` | `#c9a664` / `#e2cb9c` / `#a3803c` — aksen brand (ikon, garis, latar) |
+| `gold-ink` | `#7d5f28` — emas khusus **teks kecil di latar terang**: 5,4:1 di atas cream, sedangkan `gold-deep` hanya 3,3:1 (gagal WCAG AA) |
 | `line` / `line-dark` | `#e7dfd1` / `#2b2b2e` — garis |
 | `muted` / `muted-dark` | `#6f675b` / `#a2a2a6` — teks sekunder |
 | `shadow-card` / `shadow-lift` | Elevasi kartu & hover |
@@ -299,6 +315,32 @@ Beberapa keputusan yang sengaja diambil, dan alasannya:
    artwork. Banner promo geser dan kartu kode promo pernah dicoba di beranda mobile,
    keduanya dibuang: terlalu banyak konten berdesakan di satu layar kecil. Efeknya
    mobile langsung masuk ke baris kategori setelah kolom pencarian.
+9. **Empat dokumen kebijakan memakai satu kerangka** (`components/kebijakan/`).
+   Isinya di `data/policies.ts`, jadi menambah dokumen kelima cukup menambah satu
+   objek + satu `page.tsx` sebaris. Navigasi (pindah dokumen & daftar isi) memakai
+   `<details>` di mobile, jadi seluruh halaman jalan tanpa JavaScript, dan setiap
+   bagian diberi nomor supaya bisa dirujuk ("lihat bagian 4").
+
+---
+
+## Yang Perlu Diputuskan Sebelum Dipakai
+
+Isi keempat dokumen sudah lengkap dan konsisten dengan klaim di halaman lain, tapi
+beberapa hal masih memakai nilai default dan **harus dikonfirmasi pemilik toko**.
+Semuanya sudah ditandai `← PERLU DIPUTUSKAN` di `src/data/policies.ts`:
+
+| Hal | Nilai sekarang | Ada di |
+| --- | --- | --- |
+| Identitas badan hukum & alamat | **belum dicantumkan** — hanya brand MODIGI | seluruh dokumen |
+| Lama penyimpanan data pesanan | 12 bulan setelah masa aktif | Kebijakan Privasi → “Berapa lama data disimpan” |
+| SLA permintaan data pembeli | balasan 1×24 jam, proses maks. 7 hari kerja | Kebijakan Privasi → “Hak Anda” |
+| Waktu proses refund | disetujui 1×24 jam, dana 1–3 hari kerja | Refund & Garansi → “Berapa lama uangnya kembali” |
+| Konsekuensi pelanggaran lisensi | lisensi bisa dinonaktifkan tanpa refund | Syarat & Ketentuan → “Yang tidak boleh dilakukan” |
+| Kustomisasi kode khusus | tidak termasuk dalam lisensi | Lisensi Produk → “Yang tidak termasuk” |
+
+Nomor WhatsApp, email (`halo@modigi.id`), jam operasional, dan seluruh angka klaim
+(masa aktif 1 tahun, support 30 hari, garansi 7 hari) diambil dari `store.ts` &
+`support.ts` — jadi satu nilai hanya hidup di satu tempat.
 
 ---
 

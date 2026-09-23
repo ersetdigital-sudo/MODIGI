@@ -139,3 +139,41 @@ export type SocialLink = {
   label: string;
   href: string;
 };
+
+/** Satu blok di dalam dokumen kebijakan. */
+export type PolicySection = {
+  /** Anchor id — dipakai daftar isi, jadi jangan diubah tanpa mengubah daftarnya. */
+  id: string;
+  title: string;
+  /** Kalimat pembuka section. */
+  paragraphs?: string[];
+  /** Poin-poin (ditampilkan dengan ikon centang). */
+  bullets?: string[];
+  /** Catatan yang ditonjolkan — dipakai untuk hal yang paling sering ditanyakan. */
+  note?: string;
+};
+
+/**
+ * Dokumen kebijakan (Syarat & Ketentuan, Privasi, Refund, Lisensi).
+ *
+ * Semua dokumen memakai satu halaman shell yang sama; yang berbeda hanya isi di
+ * sini. `href` juga dipakai oleh link kolom "Kebijakan" di footer, jadi mengubah
+ * salah satunya harus mengubah keduanya.
+ */
+export type PolicyDoc = {
+  slug: string;
+  href: string;
+  /** Judul pendek untuk daftar dokumen & breadcrumb. */
+  navLabel: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  /** Tanggal revisi terakhir, mis. "23 September 2026". */
+  updated: string;
+  /** Perkiraan waktu baca dalam menit. */
+  readMinutes: number;
+  /** Ringkasan 3 poin di atas — untuk yang cuma mau baca sekilas. */
+  tldr: string[];
+  sections: PolicySection[];
+  icon: LucideIcon;
+};

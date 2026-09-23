@@ -27,6 +27,10 @@
   --color-gold: #c9a664;
   --color-gold-soft: #e2cb9c;
   --color-gold-deep: #a3803c;
+  /* Varian gelap khusus teks kecil di latar terang. `gold-deep` hanya 3,3:1 di
+     atas cream (gagal WCAG AA untuk teks normal); nilai ini 5,4:1. Ikon cukup
+     pakai `gold-deep` karena ambang non-teks cuma 3:1. */
+  --color-gold-ink: #7d5f28;
 
   /* Tipografi */
   --font-sans: var(--font-plus-jakarta-sans), ui-sans-serif, system-ui, sans-serif;

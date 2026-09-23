@@ -36,13 +36,24 @@ Dibangun dengan **Next.js 16 (App Router)**, **TypeScript**, dan **Tailwind CSS 
 
 ## Preview
 
-<!-- Ganti dengan screenshot asli: taruh di docs/preview-home.png lalu hapus komentar ini.
+**Desktop**
 
-| Beranda | Katalog | Detail Produk |
+| Beranda | Katalog | Detail produk |
 | :---: | :---: | :---: |
-| ![Beranda](docs/preview-home.png) | ![Katalog](docs/preview-catalog.png) | ![Detail](docs/preview-product.png) |
+| ![Beranda MODIGI](docs/preview-home.png) | ![Katalog produk](docs/preview-catalog.png) | ![Detail produk](docs/preview-product.png) |
 
--->
+**Mobile** — struktur mengikuti wireframe aplikasi (header bergelombang, banner promo geser,
+grid 2 kolom, tab bar bawah + tombol keranjang), warna tetap identitas MODIGI
+
+<p align="center">
+  <img src="docs/preview-home-mobile.png" width="230" alt="Beranda versi mobile" />
+  <img src="docs/preview-catalog-mobile.png" width="230" alt="Katalog versi mobile" />
+  <img src="docs/preview-product-mobile.png" width="230" alt="Detail produk versi mobile" />
+</p>
+
+**Pusat bantuan** — 6 section ber-anchor yang ditautkan dari footer
+
+![Pusat bantuan MODIGI](docs/preview-support.png)
 
 | Halaman | Deskripsi singkat |
 | --- | --- |

@@ -3,6 +3,7 @@
 import { Loader2 } from "lucide-react";
 import { useFormStatus } from "react-dom";
 
+import { tombol, type VarianTombol } from "@/components/admin/tombol";
 import { cn } from "@/lib/utils";
 
 /**
@@ -15,19 +16,10 @@ import { cn } from "@/lib/utils";
  *
  * Keduanya ditaruh DI DALAM `<form action={...}>` — jadi kalau JavaScript belum
  * termuat, form-nya tetap bisa dikirim (hanya tanpa konfirmasi/pending state).
+ *
+ * Gaya tombolnya ada di `tombol.ts` (modul biasa) — lihat penjelasan di sana soal
+ * kenapa tidak boleh diekspor dari file `"use client"`.
  */
-
-/** Gaya tombol bersama. */
-export const tombol = {
-  utama:
-    "inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#151310] px-5 text-[14px] font-bold text-white transition-colors hover:bg-[#2a2723] focus-visible:ring-2 focus-visible:ring-[#151310]/30 focus-visible:outline-none disabled:opacity-60",
-  kedua:
-    "inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#e2e2e7] bg-white px-5 text-[14px] font-bold text-[#151310] transition-colors hover:bg-[#f7f7f9] focus-visible:ring-2 focus-visible:ring-[#151310]/20 focus-visible:outline-none disabled:opacity-60",
-  kecil:
-    "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-[#e2e2e7] bg-white px-3 text-[13px] font-semibold text-[#3a3a3f] transition-colors hover:bg-[#f7f7f9] focus-visible:ring-2 focus-visible:ring-[#151310]/20 focus-visible:outline-none disabled:opacity-60",
-  bahaya:
-    "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-[#f0d5d1] bg-[#fdf4f3] px-3 text-[13px] font-semibold text-[#a32b1d] transition-colors hover:bg-[#fbe9e7] focus-visible:ring-2 focus-visible:ring-[#a32b1d]/25 focus-visible:outline-none disabled:opacity-60",
-} as const;
 
 export function SubmitButton({
   children,
@@ -37,7 +29,7 @@ export function SubmitButton({
 }: {
   children: React.ReactNode;
   pendingLabel?: string;
-  variant?: keyof typeof tombol;
+  variant?: VarianTombol;
   className?: string;
 }) {
   const { pending } = useFormStatus();
@@ -60,7 +52,7 @@ export function ConfirmSubmit({
   children: React.ReactNode;
   /** Pertanyaan konfirmasi, mis. "Hapus produk ini?" */
   message: string;
-  variant?: keyof typeof tombol;
+  variant?: VarianTombol;
   className?: string;
   title?: string;
 }) {

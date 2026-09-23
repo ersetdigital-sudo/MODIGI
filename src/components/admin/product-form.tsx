@@ -3,7 +3,8 @@ import Link from "next/link";
 import { ExternalLink, ImageIcon } from "lucide-react";
 
 import { simpanProdukAction } from "@/app/actions/admin";
-import { SubmitButton, tombol } from "@/components/admin/buttons";
+import { SubmitButton } from "@/components/admin/buttons";
+import { tombol } from "@/components/admin/tombol";
 import { Card, Field, Input, Select, Textarea } from "@/components/admin/ui";
 import type { BarisKategori, BarisProduk } from "@/lib/supabase";
 

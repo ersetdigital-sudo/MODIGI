@@ -1,6 +1,6 @@
 "use client";
 
-import { Boxes, ExternalLink, FolderTree, LayoutDashboard, Receipt, ShoppingCart } from "lucide-react";
+import { Boxes, ExternalLink, FolderTree, LayoutDashboard, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ComponentType } from "react";
@@ -16,7 +16,12 @@ type Menu = {
 };
 
 /**
- * Menu sidebar dashboard.
+ * Menu dashboard.
+ *
+ * Dua bentuk dari satu daftar yang sama:
+ * - **< lg**: baris geser horizontal di bawah nama brand — hemat tinggi layar,
+ *   pola yang sama dengan chip kategori di situs depan.
+ * - **≥ lg**: kolom vertikal di sidebar.
  *
  * Satu komponen klien kecil hanya untuk menandai halaman aktif (`usePathname`) —
  * sisanya tetap server component, jadi data tidak ikut dikirim ke browser.
@@ -35,7 +40,10 @@ export function AdminNav({ lencanaPesanan }: { lencanaPesanan: number }) {
     href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
 
   return (
-    <nav aria-label="Menu dashboard" className="flex flex-col gap-1">
+    <nav
+      aria-label="Menu dashboard"
+      className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:px-0 lg:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
       {menu.map(({ label, href, icon: Icon, lencana }) => {
         const ini = aktif(href);
 
@@ -45,12 +53,12 @@ export function AdminNav({ lencanaPesanan }: { lencanaPesanan: number }) {
             href={href}
             aria-current={ini ? "page" : undefined}
             className={cn(
-              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-semibold transition-colors",
-              ini ? "bg-white text-[#151310] shadow-sm" : "text-[#a2a2a6] hover:bg-white/5 hover:text-white",
+              "flex shrink-0 items-center gap-2.5 rounded-xl px-3 py-2.5 text-[14px] font-semibold whitespace-nowrap transition-colors lg:gap-3",
+              ini ? "bg-white text-[#151310] shadow-sm" : "text-[#c9c9ce] hover:bg-white/5 hover:text-white",
             )}
           >
             <Icon className="size-[18px] shrink-0" aria-hidden="true" />
-            <span className="flex-1">{label}</span>
+            <span>{label}</span>
 
             {lencana ? (
               <span className="tabular grid min-w-5 place-items-center rounded-full bg-[#c9a664] px-1.5 text-[11px] font-bold text-[#151310]">
@@ -63,16 +71,11 @@ export function AdminNav({ lencanaPesanan }: { lencanaPesanan: number }) {
 
       <Link
         href="/"
-        className="mt-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-semibold text-[#a2a2a6] transition-colors hover:bg-white/5 hover:text-white"
+        className="hidden min-h-6 items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-semibold text-[#c9c9ce] transition-colors hover:bg-white/5 hover:text-white lg:mt-1 lg:flex"
       >
         <ExternalLink className="size-[18px] shrink-0" aria-hidden="true" />
         Lihat situs
       </Link>
-
-      <span className="mt-3 flex items-center gap-3 px-3 text-[13px] text-[#6f6f74]">
-        <Receipt className="size-[18px] shrink-0" aria-hidden="true" />
-        Pembayaran dicatat per pesanan
-      </span>
     </nav>
   );
 }

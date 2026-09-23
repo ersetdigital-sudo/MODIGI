@@ -11,7 +11,7 @@ import {
   Wallet,
 } from "lucide-react";
 
-import { tombol } from "@/components/admin/buttons";
+import { tombol } from "@/components/admin/tombol";
 import { Alert, Card, PageHeader, Pill, statusPesananNada } from "@/components/admin/ui";
 import { cloudinarySiap } from "@/lib/cloudinary";
 import { formatRupiah, formatWaktu } from "@/lib/format";
@@ -112,7 +112,7 @@ export default async function DasborPage() {
         </Alert>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 xl:gap-4">
         {statistik.map(({ label, value, catatan, href, icon: Icon }) => (
           <Link
             key={label}
@@ -133,7 +133,9 @@ export default async function DasborPage() {
         ))}
       </div>
 
-      <div className="mt-5 grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+      {/* `items-start`: kartunya setinggi isinya masing-masing, jadi keadaan kosong
+          tidak dipaksa melar mengikuti kartu di sebelahnya. */}
+      <div className="mt-5 grid items-start gap-5 lg:grid-cols-[1.5fr_1fr]">
         <Card
           title="Pesanan terbaru"
           description="Lima pesanan terakhir yang masuk dari halaman checkout."
@@ -149,7 +151,7 @@ export default async function DasborPage() {
           bodyClassName="px-0 py-0"
         >
           {(pesananTerbaru.data ?? []).length === 0 ? (
-            <p className="px-5 py-8 text-center text-[13.5px] text-[#6f6f74]">
+            <p className="px-5 py-10 text-center text-[13.5px] leading-relaxed text-[#6f6f74]">
               Belum ada pesanan. Pesanan muncul di sini begitu pembeli menekan
               <span className="font-semibold"> Buat Pesanan</span> di halaman checkout.
             </p>
@@ -181,28 +183,40 @@ export default async function DasborPage() {
         </Card>
 
         <Card title="Yang sering dipakai" description="Pintasan ke pekerjaan harian.">
-          <ul className="flex flex-col gap-3">
+          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
             <li>
-              <Link href="/admin/produk/baru" className={tombol.kedua + " w-full justify-start"}>
-                <Plus className="size-4" aria-hidden="true" />
+              <Link
+                href="/admin/produk/baru"
+                className={tombol.kedua + " w-full justify-start gap-2.5 text-[13.5px]"}
+              >
+                <Plus className="size-4 shrink-0" aria-hidden="true" />
                 Tambah produk baru
               </Link>
             </li>
             <li>
-              <Link href="/admin/produk" className={tombol.kedua + " w-full justify-start"}>
-                <CloudUpload className="size-4" aria-hidden="true" />
-                Unggah & ganti gambar produk
+              <Link
+                href="/admin/produk"
+                className={tombol.kedua + " w-full justify-start gap-2.5 text-[13.5px]"}
+              >
+                <CloudUpload className="size-4 shrink-0" aria-hidden="true" />
+                Unggah & ganti gambar
               </Link>
             </li>
             <li>
-              <Link href="/admin/kategori" className={tombol.kedua + " w-full justify-start"}>
-                <FolderTree className="size-4" aria-hidden="true" />
-                Atur kategori & urutannya
+              <Link
+                href="/admin/kategori"
+                className={tombol.kedua + " w-full justify-start gap-2.5 text-[13.5px]"}
+              >
+                <FolderTree className="size-4 shrink-0" aria-hidden="true" />
+                Atur kategori & urutan
               </Link>
             </li>
             <li>
-              <Link href="/admin/pesanan" className={tombol.kedua + " w-full justify-start"}>
-                <Receipt className="size-4" aria-hidden="true" />
+              <Link
+                href="/admin/pesanan"
+                className={tombol.kedua + " w-full justify-start gap-2.5 text-[13.5px]"}
+              >
+                <Receipt className="size-4 shrink-0" aria-hidden="true" />
                 Catat pembayaran masuk
               </Link>
             </li>

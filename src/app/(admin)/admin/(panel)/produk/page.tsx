@@ -4,7 +4,8 @@ import Link from "next/link";
 import { ExternalLink, ImageIcon, Pencil, Plus, Trash2 } from "lucide-react";
 
 import { hapusProdukAction, ubahStatusProdukAction } from "@/app/actions/admin";
-import { ConfirmSubmit, SubmitButton, tombol } from "@/components/admin/buttons";
+import { ConfirmSubmit, SubmitButton } from "@/components/admin/buttons";
+import { tombol } from "@/components/admin/tombol";
 import { Alert, Card, EmptyState, PageHeader, Pill } from "@/components/admin/ui";
 import { formatRupiah } from "@/lib/format";
 import { ambilSupabase, supabaseSiap, type BarisKategori, type BarisProduk } from "@/lib/supabase";

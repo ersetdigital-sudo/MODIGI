@@ -124,10 +124,14 @@ export function OrderDone() {
           <dl className="mt-4 grid gap-x-8 gap-y-3 text-[14px] sm:grid-cols-2">
             <Baris label="Nama" nilai={order.customer.name} />
             <Baris label="WhatsApp" nilai={order.customer.whatsapp} />
-            {order.customer.email && <Baris label="Email" nilai={order.customer.email} />}
-            <Baris label="Domain" nilai={order.customer.domain} />
-            {order.customer.note && <Baris label="Catatan" nilai={order.customer.note} />}
+            <Baris label="Domain WordPress" nilai={order.customer.domain} />
+            <Baris label="Username WP-Admin" nilai={order.customer.wpUser} />
           </dl>
+
+          <p className="mt-4 text-[12.5px] leading-relaxed text-[var(--muted)]">
+            Password WP-Admin tidak ditampilkan di sini karena tidak disimpan di browser —
+            hanya ikut terkirim ke WhatsApp admin untuk proses instalasi.
+          </p>
         </section>
       </div>
 

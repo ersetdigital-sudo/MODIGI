@@ -5,13 +5,17 @@ import { useCallback, useMemo, useSyncExternalStore } from "react";
 import {
   clearCart,
   countItems,
+  getCartDrawerServerSnapshot,
+  getCartDrawerSnapshot,
   getCartServerSnapshot,
   getCartSnapshot,
   getOrderServerSnapshot,
   getOrderSnapshot,
   normalizeQty,
   readCart,
+  setCartDrawer,
   subscribeCart,
+  subscribeCartDrawer,
   subscribeOrder,
   summarize,
   toLines,
@@ -76,6 +80,26 @@ export function useCart() {
     setQty,
     remove,
     clear,
+  };
+}
+
+/**
+ * Status drawer keranjang (panel yang muncul dari kanan saat menambah produk).
+ *
+ * Dipisah dari `useCart` karena drawer harus bisa dibuka dari mana saja, termasuk
+ * halaman yang tidak menampilkan isi keranjang sama sekali.
+ */
+export function useCartDrawer() {
+  const terbuka = useSyncExternalStore(
+    subscribeCartDrawer,
+    getCartDrawerSnapshot,
+    getCartDrawerServerSnapshot,
+  );
+
+  return {
+    terbuka,
+    buka: useCallback(() => setCartDrawer(true), []),
+    tutup: useCallback(() => setCartDrawer(false), []),
   };
 }
 

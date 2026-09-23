@@ -313,7 +313,7 @@ export function readLastOrder(): Order | null {
  * Ditulis apa adanya (bukan tabel/kode) supaya admin bisa langsung membalas
  * tanpa perlu membuka sistem apa pun — ini pengganti halaman admin yang belum ada.
  */
-export function orderMessage(order: Order) {
+export function orderMessage(order: Order, wpPassword?: string) {
   const baris = order.items.map(
     (item, index) =>
       `${index + 1}. ${item.name} — ${item.qty} lisensi × ${formatRupiah(item.price)} = ${formatRupiah(item.subtotal)}`,
@@ -332,12 +332,54 @@ export function orderMessage(order: Order) {
     `No. pesanan: ${order.orderNo}`,
     `Nama: ${order.customer.name}`,
     `WhatsApp: ${order.customer.whatsapp}`,
-    order.customer.email ? `Email: ${order.customer.email}` : null,
-    `Domain: ${order.customer.domain}`,
-    order.customer.note ? `Catatan: ${order.customer.note}` : null,
+    `Domain WordPress: ${order.customer.domain}`,
+    `Username WP-Admin: ${order.customer.wpUser}`,
+    // Password TIDAK ikut disimpan di pesanan (`Order`) — hanya ada di pesan ini,
+    // yang dikirim langsung dari formulir saat pembeli menekan "Buat Pesanan".
+    wpPassword ? `Password WP-Admin: ${wpPassword}` : null,
     ``,
     `${formatCompact(order.items.length)} jenis produk · mohon info cara pembayarannya.`,
   ]
     .filter((teks): teks is string => teks !== null)
     .join("\n");
+}
+
+// ---------------------------------------------------------------------------
+// Drawer keranjang
+// ---------------------------------------------------------------------------
+
+/**
+ * Status buka/tutup drawer keranjang.
+ *
+ * Disimpan sebagai store eksternal kecil (sama seperti keranjang) supaya tombol
+ * "Tambah ke Keranjang", ikon keranjang di header, dan FAB di tab bar mobile bisa
+ * membuka panel yang sama tanpa saling mengirim prop atau memakai context.
+ */
+export const DRAWER_EVENT = "modigi:drawer-keranjang";
+
+let drawerTerbuka = false;
+
+export function setCartDrawer(terbuka: boolean) {
+  if (!adaWindow()) return;
+  if (drawerTerbuka === terbuka) return;
+
+  drawerTerbuka = terbuka;
+  window.dispatchEvent(new Event(DRAWER_EVENT));
+}
+
+export function getCartDrawerSnapshot() {
+  return drawerTerbuka;
+}
+
+/** Server & hidrasi: selalu tertutup. */
+export function getCartDrawerServerSnapshot() {
+  return false;
+}
+
+export function subscribeCartDrawer(callback: () => void) {
+  if (!adaWindow()) return () => {};
+
+  window.addEventListener(DRAWER_EVENT, callback);
+
+  return () => window.removeEventListener(DRAWER_EVENT, callback);
 }

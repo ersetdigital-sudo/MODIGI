@@ -1,20 +1,20 @@
 "use client";
 
-import { Check, ShoppingCart } from "lucide-react";
-import Link from "next/link";
+import { ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
-import { useCart } from "@/components/cart/use-cart";
+import { useCart, useCartDrawer } from "@/components/cart/use-cart";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types";
 
 /**
  * Tombol "Tambah ke Keranjang".
  *
- * Setelah diklik, labelnya berubah sebentar jadi "Ditambahkan" + tautan ke
- * keranjang. Ini penting: tanpa umpan balik, orang menekan tombol lalu tidak
- * tahu apa yang terjadi — dan menekannya berkali-kali.
+ * Setelah diklik, drawer keranjang terbuka dari kanan — jadi pembeli langsung
+ * melihat produknya masuk, bisa mengubah jumlah, lalu lanjut ke checkout tanpa
+ * kehilangan halaman yang sedang dibaca. Panel itu sendiri yang jadi umpan baliknya,
+ * dan satu baris teks `aria-live` mengumumkannya ke pembaca layar.
  */
 export function AddToCartButton({
   product,
@@ -27,49 +27,29 @@ export function AddToCartButton({
   className?: string;
   icon?: boolean;
 }) {
-  const { add } = useCart();
-  const [ditambahkan, setDitambahkan] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (timer.current) clearTimeout(timer.current);
-    };
-  }, []);
-
-  const handleClick = () => {
-    add(product);
-    setDitambahkan(true);
-
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => setDitambahkan(false), 2600);
-  };
+  const { add, count } = useCart();
+  const { buka } = useCartDrawer();
+  const [diumumkan, setDiumumkan] = useState(false);
 
   return (
     <div className={cn("flex flex-col items-stretch gap-2", className)}>
       <button
         type="button"
-        onClick={handleClick}
-        className={cn("btn btn-ghost w-full", ditambahkan && "border-[var(--ink)]")}
+        onClick={() => {
+          add(product);
+          buka();
+          setDiumumkan(true);
+        }}
+        className="btn btn-ghost w-full"
       >
-        {ditambahkan ? (
-          <Check className="size-[18px] text-[var(--accent)]" aria-hidden="true" />
-        ) : (
-          icon && <ShoppingCart className="size-[18px]" aria-hidden="true" />
-        )}
-        {ditambahkan ? "Ditambahkan ke keranjang" : label}
+        {icon && <ShoppingCart className="size-[18px]" aria-hidden="true" />}
+        {label}
       </button>
 
-      {/* Diucapkan pembaca layar begitu produk masuk keranjang. */}
-      <p aria-live="polite" className="min-h-0 text-[12.5px] text-[var(--muted)]">
-        {ditambahkan && (
-          <>
-            Sudah masuk keranjang.{" "}
-            <Link href="/keranjang" className="font-bold text-[var(--accent)] hover:underline">
-              Lihat keranjang
-            </Link>
-          </>
-        )}
+      {/* Angkanya ikut dibacakan supaya teksnya berubah tiap kali ditambahkan —
+          teks `aria-live` yang isinya sama persis tidak akan diumumkan lagi. */}
+      <p aria-live="polite" className="sr-only">
+        {diumumkan ? `${product.name} ditambahkan. Keranjang berisi ${count} produk.` : ""}
       </p>
     </div>
   );

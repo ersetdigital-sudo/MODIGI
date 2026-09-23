@@ -21,22 +21,18 @@ export default function CheckoutPage() {
   return (
     <div className="mx-auto max-w-6xl px-5 py-10">
       <nav aria-label="Breadcrumb" className="text-[13px] text-[var(--muted)]">
-        <Link href="/" className="hover:text-[var(--ink)]">
-          Beranda
+        <Link href={checkoutCopy.breadcrumbParent.href} className="hover:text-[var(--ink)]">
+          {checkoutCopy.breadcrumbParent.label}
         </Link>{" "}
-        /{" "}
-        <Link href="/keranjang" className="hover:text-[var(--ink)]">
-          Keranjang
-        </Link>{" "}
-        / <span className="font-semibold text-[var(--ink)]">{checkoutCopy.breadcrumb}</span>
+        <span aria-hidden="true" className="text-[var(--line)]">
+          ›
+        </span>{" "}
+        <span className="font-semibold text-[var(--ink)]">{checkoutCopy.breadcrumb}</span>
       </nav>
 
       <h1 className="mt-4 text-[30px] font-extrabold tracking-[-0.03em] md:text-[40px]">
         {checkoutCopy.title}
       </h1>
-      <p className="mt-2.5 max-w-2xl text-[15.5px] leading-relaxed text-[var(--muted)]">
-        {checkoutCopy.description}
-      </p>
 
       <CheckoutForm />
     </div>

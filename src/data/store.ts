@@ -130,46 +130,58 @@ export const cartCopy = {
   checkoutLabel: "Lanjut ke Checkout",
   continueLabel: "Lanjut belanja",
   note: "Langkah berikutnya: isi data pesanan, lalu kirim ringkasannya ke WhatsApp admin.",
+
+  /** Teks drawer keranjang — panel yang muncul dari kanan saat produk ditambahkan. */
+  drawer: {
+    /** Judul + jumlah lisensi, mis. "Keranjang (2)". */
+    title: "Keranjang",
+    clearLabel: "Hapus Semua",
+    closeLabel: "Tutup keranjang",
+    totalItemLabel: "Total Item",
+    totalPriceLabel: "Total Harga",
+    /** "1 produk" / "3 produk". */
+    itemSuffix: "produk",
+    checkoutLabel: "Checkout Sekarang",
+    pageLabel: "Buka halaman keranjang",
+    emptyTitle: "Keranjang masih kosong",
+    emptyDescription: "Produk yang Anda tambahkan akan muncul di sini — tinggal atur jumlah dan lanjut ke checkout.",
+    emptyAction: { label: "Lihat Katalog", href: "/produk" },
+  },
 };
 
 /** Teks halaman checkout (/checkout). */
 export const checkoutCopy = {
   breadcrumb: "Checkout",
-  title: "Data pesanan",
-  description:
-    "Isi data di bawah, lalu kirim pesanan ke WhatsApp admin. Kami balas dengan rincian pembayaran.",
-  formTitle: "Data pembeli",
+  /** Induk breadcrumb, mis. "Katalog > Checkout". */
+  breadcrumbParent: { label: "Katalog", href: "/produk" },
+  title: "Checkout",
+  formTitle: "Data Instalasi",
+  formDescription: "Isi data WordPress Anda untuk proses instalasi plugin.",
   fields: {
-    name: { label: "Nama lengkap", placeholder: "Nama Anda" },
-    whatsapp: {
-      label: "Nomor WhatsApp",
-      placeholder: "08xx xxxx xxxx",
-      hint: "Rincian pembayaran dan lisensi dikirim ke nomor ini.",
-    },
-    email: {
-      label: "Email (opsional)",
-      placeholder: "nama@email.com",
-      hint: "Dipakai untuk arsip lisensi Anda.",
-    },
-    domain: {
-      label: "Domain website",
-      placeholder: "namadomain.com",
-      hint: "1 lisensi = 1 domain. Belum ada domain? Tulis rencana domainnya.",
-    },
-    note: {
-      label: "Catatan (opsional)",
-      placeholder: "Mis. minta sekalian dipasangkan, atau nomor invoice berbeda.",
-    },
+    name: { label: "Nama Lengkap", placeholder: "Nama Anda" },
+    whatsapp: { label: "Nomor WhatsApp", placeholder: "08xxxxxxxxxx" },
+    domain: { label: "Domain WordPress", placeholder: "contoh.com" },
+    wpUser: { label: "Username WP-Admin", placeholder: "admin@domainanda.com" },
+    wpPassword: { label: "Password WP-Admin", placeholder: "••••••••" },
   },
-  agreementLead: "Saya sudah membaca dan setuju dengan",
-  agreementLinks: [
-    { label: "Lisensi Produk", href: "/kebijakan/lisensi" },
-    { label: "Syarat & Ketentuan", href: "/kebijakan/syarat-ketentuan" },
-  ],
-  agreementSuffix: "termasuk aturan satu lisensi untuk satu domain.",
-  submitLabel: "Kirim Pesanan ke WhatsApp",
-  submitHint:
-    "Setelah terkirim, Anda menerima rincian pembayaran (transfer bank atau QRIS) di chat yang sama.",
+  showPassword: "Lihat",
+  hidePassword: "Sembunyikan",
+  /**
+   * Catatan keamanan di bawah field password — ditampilkan, bukan cuma ditulis di
+   * dokumentasi, karena pembeli berhak tahu passwordnya tidak mengendap di browser.
+   */
+  passwordNote:
+    "Password hanya dikirim ke WhatsApp admin untuk instalasi dan tidak disimpan di halaman ini. Sebaiknya ganti setelah plugin terpasang.",
+  submitLabel: "Buat Pesanan",
+  submitNote: "Lanjut ke halaman pembayaran setelah pesanan dibuat.",
+  policyNote: {
+    lead: "Dengan membuat pesanan, Anda setuju dengan",
+    links: [
+      { label: "Lisensi Produk", href: "/kebijakan/lisensi" },
+      { label: "Syarat & Ketentuan", href: "/kebijakan/syarat-ketentuan" },
+    ],
+    suffix: "— termasuk aturan satu lisensi untuk satu domain.",
+  },
   backToCart: "Kembali ke keranjang",
   empty: {
     title: "Tidak ada yang bisa di-checkout",
@@ -177,6 +189,10 @@ export const checkoutCopy = {
     action: { label: "Lihat Katalog", href: "/produk" },
   },
   summaryTitle: "Ringkasan Pesanan",
+  totalItemLabel: "Total Item",
+  totalPriceLabel: "Total Harga",
+  /** "1 produk" / "3 produk" di baris Total Item. */
+  itemSuffix: "produk",
 };
 
 /** Teks halaman konfirmasi (/checkout/selesai). */

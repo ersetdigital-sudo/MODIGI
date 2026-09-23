@@ -141,14 +141,29 @@ export type OrderItem = {
   subtotal: number;
 };
 
-/** Data pembeli yang diisi di halaman checkout. */
+/**
+ * Data pemesan — juga dipakai untuk instalasi plugin di website pembeli.
+ *
+ * SENGAJA TANPA PASSWORD: yang tersimpan di browser tidak boleh memuat kredensial
+ * WordPress. Lihat `CheckoutData`. 
+ */
 export type Customer = {
   name: string;
   whatsapp: string;
-  email: string;
-  /** Domain tempat lisensi akan dipakai — 1 lisensi = 1 domain. */
+  /** Domain WordPress tempat plugin dipasang — 1 lisensi = 1 domain. */
   domain: string;
-  note?: string;
+  /** Username WP-Admin, dipakai admin untuk memasang pluginnya. */
+  wpUser: string;
+};
+
+/**
+ * Isi formulir checkout: data pemesan + password WP-Admin.
+ *
+ * Password hanya dipakai untuk menyusun pesan WhatsApp dan **tidak pernah
+ * disimpan** ke `localStorage` — lihat `createOrder` di `lib/cart.ts`.
+ */
+export type CheckoutData = Customer & {
+  wpPassword: string;
 };
 
 /**
@@ -163,6 +178,7 @@ export type Order = {
   /** ISO string supaya bisa diformat ulang kapan saja. */
   createdAt: string;
   items: OrderItem[];
+  /** Data pemesan tanpa password — password hanya ikut ke pesan WhatsApp. */
   customer: Customer;
   /** Total harga jual (setelah diskon). */
   total: number;

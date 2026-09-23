@@ -1,9 +1,8 @@
 "use client";
 
 import { ShoppingCart } from "lucide-react";
-import Link from "next/link";
 
-import { useCart } from "@/components/cart/use-cart";
+import { useCart, useCartDrawer } from "@/components/cart/use-cart";
 import { cn } from "@/lib/utils";
 
 type CartLinkProps = {
@@ -13,21 +12,26 @@ type CartLinkProps = {
 };
 
 /**
- * Ikon keranjang dengan jumlah dari state keranjang asli (dulu angka tetap 0).
+ * Ikon keranjang + jumlahnya.
+ *
+ * Menekannya membuka drawer keranjang (bukan pindah halaman) — jadi pembeli tetap
+ * di halaman yang sedang dibaca, dan halaman `/keranjang` tetap tersedia lewat
+ * tautan di dalam drawer untuk siapa pun yang memang mau halaman penuh.
  *
  * Angka di badge di-`aria-hidden` (murni visual) dan jumlahnya diumumkan lewat
- * `aria-label`, jadi pembaca layar mendengar "Keranjang belanja, 3 produk" sekali
- * — bukan angka yang melayang tanpa konteks.
+ * `aria-label`, jadi pembaca layar mendengar "Keranjang belanja, 3 produk" sekali.
  */
 export function CartLink({ variant = "header", className }: CartLinkProps) {
   const { count, ready } = useCart();
-  const label = ready && count > 0 ? `Keranjang belanja, ${count} produk` : "Keranjang belanja";
+  const { buka } = useCartDrawer();
 
+  const label = ready && count > 0 ? `Buka keranjang, ${count} produk` : "Buka keranjang";
   const isFab = variant === "fab";
 
   return (
-    <Link
-      href="/keranjang"
+    <button
+      type="button"
+      onClick={buka}
       aria-label={label}
       className={cn(
         isFab
@@ -53,6 +57,6 @@ export function CartLink({ variant = "header", className }: CartLinkProps) {
           {count > 9 ? "9+" : count}
         </span>
       )}
-    </Link>
+    </button>
   );
 }

@@ -1,25 +1,23 @@
 "use client";
 
-import { ArrowRight, Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
+import { ArrowRight, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 
+import { CartItemRow } from "@/components/cart/cart-item-row";
 import { useCart } from "@/components/cart/use-cart";
 import { WhatsappIcon } from "@/components/store/whatsapp-icon";
-import { PluginBoxArt } from "@/components/ui/plugin-box-art";
-import { getCategoryName } from "@/data/categories";
 import { cartCopy } from "@/data/store";
-import { MAX_QTY } from "@/lib/cart";
 import { formatRupiah } from "@/lib/format";
 import { whatsappLink } from "@/lib/whatsapp";
 
 /**
- * Isi halaman /keranjang.
+ * Isi halaman /keranjang — versi halaman penuh dari drawer.
  *
  * Dipisah dari `page.tsx` supaya halamannya tetap komponen server (metadata,
- * breadcrumb, judul) — hanya bagian yang butuh state yang jadi client.
+ * judul), sementara bagian yang butuh state jadi client.
  */
 export function CartView() {
-  const { lines, count, total, savings, ready, setQty, remove } = useCart();
+  const { lines, count, total, savings, ready, clear } = useCart();
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-10">
@@ -43,90 +41,29 @@ export function CartView() {
         <KeranjangKosong />
       ) : (
         <div className="mt-8 grid items-start gap-8 lg:grid-cols-[1.6fr_1fr]">
-          <ul className="flex flex-col gap-4">
-            {lines.map((line) => (
-              <li key={line.slug} className="card p-4">
-                <div className="flex gap-4">
-                  <div className="cover-box size-[76px] shrink-0 rounded-2xl bg-gradient-to-b from-[#fbf9f5] to-[#efeae1] ring-1 ring-black/[0.05]">
-                    <PluginBoxArt art={line.product.art} sizes="76px" />
-                  </div>
+          <div>
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-[13.5px] font-semibold text-[var(--muted)]">
+                {count} {cartCopy.drawer.itemSuffix}
+              </p>
 
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-[var(--muted)]">
-                      {getCategoryName(line.product.categorySlug)}
-                    </p>
+              <button
+                type="button"
+                onClick={clear}
+                className="inline-flex h-9 items-center rounded-lg px-3 text-[13px] font-semibold text-[#b42318] transition-colors hover:bg-[#fdf2f2] focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:outline-none"
+              >
+                {cartCopy.drawer.clearLabel}
+              </button>
+            </div>
 
-                    <h2 className="mt-1 text-[16.5px] font-bold leading-snug">
-                      <Link
-                        href={`/produk/${line.slug}`}
-                        className="hover:underline focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:outline-none"
-                      >
-                        {line.product.name}
-                      </Link>
-                    </h2>
-
-                    <p className="tabular mt-1 flex flex-wrap items-center gap-x-2 text-[13px] text-[var(--muted)]">
-                      <span>{formatRupiah(line.product.price)} / lisensi</span>
-                      <span className="text-[var(--line)]">·</span>
-                      <span>{cartCopy.perItemNote}</span>
-                    </p>
-                  </div>
-
-                  <p className="tabular hidden shrink-0 text-[17px] font-extrabold sm:block">
-                    {formatRupiah(line.subtotal)}
-                  </p>
-                </div>
-
-                <div className="divider my-4" />
-
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1 rounded-full border border-[var(--line)] bg-white p-1">
-                      <button
-                        type="button"
-                        onClick={() => setQty(line.slug, line.qty - 1)}
-                        disabled={line.qty <= 1}
-                        aria-label={`${cartCopy.decreaseLabel} ${line.product.name}`}
-                        className="grid size-8 place-items-center rounded-full text-[var(--ink)] transition hover:bg-[#f1eee7] disabled:opacity-40"
-                      >
-                        <Minus className="size-4" aria-hidden="true" />
-                      </button>
-
-                      <span className="tabular w-9 text-center text-[15px] font-bold">
-                        <span className="sr-only">
-                          {cartCopy.qtyLabel} {line.product.name}:{" "}
-                        </span>
-                        {line.qty}
-                      </span>
-
-                      <button
-                        type="button"
-                        onClick={() => setQty(line.slug, line.qty + 1)}
-                        disabled={line.qty >= MAX_QTY}
-                        aria-label={`${cartCopy.increaseLabel} ${line.product.name}`}
-                        className="grid size-8 place-items-center rounded-full text-[var(--ink)] transition hover:bg-[#f1eee7] disabled:opacity-40"
-                      >
-                        <Plus className="size-4" aria-hidden="true" />
-                      </button>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => remove(line.slug)}
-                      className="inline-flex h-9 items-center gap-1.5 rounded-lg px-2 text-[13px] font-semibold text-[var(--muted)] transition-colors hover:text-[#b42318] focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:outline-none"
-                    >
-                      <Trash2 className="size-4" aria-hidden="true" />
-                      {cartCopy.removeLabel}
-                    </button>
-                  </div>
-
-                  <p className="tabular text-[17px] font-extrabold sm:hidden">
-                    {formatRupiah(line.subtotal)}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ul>
+            <ul className="mt-3 flex flex-col gap-4">
+              {lines.map((line) => (
+                <li key={line.slug}>
+                  <CartItemRow line={line} size="md" showLineTotal />
+                </li>
+              ))}
+            </ul>
+          </div>
 
           <aside className="card p-5 lg:sticky lg:top-[88px]">
             <h2 className="text-[17px] font-extrabold tracking-[-0.01em]">
@@ -174,9 +111,7 @@ export function CartView() {
               {cartCopy.continueLabel}
             </Link>
 
-            <p className="mt-3 text-[12.5px] leading-relaxed text-[var(--muted)]">
-              {cartCopy.note}
-            </p>
+            <p className="mt-3 text-[12.5px] leading-relaxed text-[var(--muted)]">{cartCopy.note}</p>
           </aside>
         </div>
       )}

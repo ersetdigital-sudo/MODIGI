@@ -70,9 +70,9 @@ bernomor supaya bagian tertentu gampang dirujuk
 
 **Keranjang & Checkout** — dari "suka produknya" sampai pesanan terkirim, tanpa akun
 
-| Keranjang | Checkout |
-| :---: | :---: |
-| ![Keranjang MODIGI](docs/preview-keranjang.png) | ![Checkout MODIGI](docs/preview-checkout.png) |
+| Drawer keranjang | Halaman keranjang | Checkout |
+| :---: | :---: | :---: |
+| ![Drawer keranjang MODIGI](docs/preview-drawer.png) | ![Halaman keranjang MODIGI](docs/preview-keranjang.png) | ![Checkout MODIGI](docs/preview-checkout.png) |
 
 | Halaman | Deskripsi singkat |
 | --- | --- |
@@ -100,6 +100,9 @@ bernomor supaya bagian tertentu gampang dirujuk
   blok "Cara pesan", produk terkait, dan bar beli khusus mobile
 - **Ulasan ala marketplace**: ringkasan rating + sebaran bintang, filter per bintang,
   tombol "lihat ulasan lainnya", badge pembelian terverifikasi
+- **Drawer keranjang** — menekan "Tambah ke Keranjang" (atau ikon keranjang di
+  header / FAB di tab bar) membuka panel dari kanan: ubah jumlah, hapus item,
+  lihat total, lalu langsung ke checkout tanpa meninggalkan halaman yang dibaca
 - **Keranjang** — isinya disimpan di `localStorage` (hanya slug + jumlah), badge
   jumlah di header & tab bar mobile ikut berubah tanpa reload
 - **Checkout** — formulir data pembeli (nama, WhatsApp, email, domain, catatan),
@@ -359,15 +362,32 @@ Beberapa keputusan yang sengaja diambil, dan alasannya:
    `useSyncExternalStore`** (`lib/cart.ts` + `components/cart/use-cart.ts`). Jadi
    tidak ada provider/context yang perlu dipasang: header, tab bar mobile, halaman
    keranjang, dan checkout semuanya membaca angka yang sama, dan tab lain yang
-   mengubah keranjang pun ikut tersinkron. Yang disimpan hanya `slug` + jumlah —
-   harga selalu diambil ulang dari katalog, sehingga tidak pernah ada harga basi
-   yang tertinggal di browser pembeli.
+   mengubah keranjang pun ikut tersinkron. Mengubah isi keranjang membuat React
+   otomatis render ulang semua yang membacanya.
+   Yang disimpan hanya `slug` + jumlah — harga selalu diambil ulang dari katalog,
+   sehingga tidak pernah ada harga basi yang tertinggal di browser pembeli.
+   Status buka/tutup drawer juga store terpisah (`useCartDrawer`), supaya tombol di
+   halaman produk, ikon di header, dan FAB di tab bar mobile bisa membuka panel yang
+   sama tanpa saling mengirim prop.
 10. **Checkout tanpa backend.** Pesanan disimpan di `localStorage` (untuk halaman
    konfirmasi) dan salinannya dikirim ke WhatsApp admin. Ini jujur terhadap kondisi
    sekarang: tidak ada server yang menampung data pembeli, dan tidak ada nomor
    rekening palsu yang ditampilkan di halaman konfirmasi — rincian pembayaran tetap
    dikirim admin lewat chat.
-11. **Empat dokumen kebijakan memakai satu kerangka** (`components/kebijakan/`).
+11. **Password WP-Admin TIDAK disimpan di browser.** Formulir checkout meminta
+   kredensial WP-Admin (dipakai admin untuk memasang pluginnya), tapi
+   `createOrder()` sengaja tidak memasukkannya ke objek pesanan — password hanya ada
+   di memori form, ikut ke pesan WhatsApp, lalu dibuang dari state. Halaman
+   konfirmasi menampilkan username tanpa passwordnya dan menyebutkan alasannya,
+   dan formulir memberi catatan agar password diganti setelah plugin terpasang.
+   Kalau keamanan jadi prioritas, langkah berikutnya adalah akun WP sementara atau
+   tautan instalasi sekali-pakai — sudah masuk daftar di bawah.
+12. **Drawer keranjang memakai `inert` saat tertutup.** Panel yang cuma digeser ke
+   luar layar tetap bisa di-Tab — jadi panelnya benar-benar dimatikan (bukan sekadar
+   transparan), `Escape` menutup, fokus dipindah ke panel saat dibuka dan
+   dikembalikan ke tombol pemicunya saat ditutup, dan scroll halaman dikunci selama
+   panel terbuka.
+13. **Empat dokumen kebijakan memakai satu kerangka** (`components/kebijakan/`).
    Isinya di `data/policies.ts`, jadi menambah dokumen kelima cukup menambah satu
    objek + satu `page.tsx` sebaris. Navigasi (pindah dokumen & daftar isi) memakai
    `<details>` di mobile, jadi seluruh halaman jalan tanpa JavaScript, dan setiap
@@ -383,6 +403,7 @@ Semuanya sudah ditandai `← PERLU DIPUTUSKAN` di `src/data/policies.ts`:
 
 | Hal | Nilai sekarang | Ada di |
 | --- | --- | --- |
+| **Kredensial WP-Admin** | Diminta di checkout lalu dikirim lewat WhatsApp | `data/store.ts` → `checkoutCopy.passwordNote` |
 | Identitas badan hukum & alamat | **belum dicantumkan** — hanya brand MODIGI | seluruh dokumen |
 | Lama penyimpanan data pesanan | 12 bulan setelah masa aktif | Kebijakan Privasi → “Berapa lama data disimpan” |
 | SLA permintaan data pembeli | balasan 1×24 jam, proses maks. 7 hari kerja | Kebijakan Privasi → “Hak Anda” |

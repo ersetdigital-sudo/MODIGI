@@ -37,13 +37,18 @@ export const sortOptions = [
 
 export type SortValue = (typeof sortOptions)[number]["value"];
 
-/** Label teks untuk kartu statistik + baris versi di halaman detail produk. */
+/**
+ * Label teks untuk tiga kartu statistik di halaman detail produk.
+ *
+ * `versionLabel` sudah tidak ada: kartu versi & tanggal update dihapus dari
+ * halaman detail (informasinya, kalau perlu, cukup jadi satu baris di tab
+ * Spesifikasi — ditulis manual oleh admin).
+ */
 export const productStatsCopy = {
   reviewsSuffix: "ulasan",
   soldLabel: "lisensi terjual",
   activationValue: "< 5 menit",
   activationLabel: "waktu aktivasi",
-  versionLabel: "Versi terbaru",
 };
 
 /**
@@ -171,10 +176,10 @@ export const checkoutCopy = {
    * dokumentasi, karena pembeli berhak tahu passwordnya tidak mengendap di browser.
    */
   passwordNote:
-    "Password hanya dikirim ke WhatsApp admin untuk instalasi dan tidak disimpan di halaman ini. Sebaiknya ganti setelah plugin terpasang.",
+    "Password hanya ada di memori halaman ini dan baru ikut terkirim ke WhatsApp admin saat Anda menekan Konfirmasi Pembayaran. Sebaiknya ganti setelah plugin terpasang.",
   submitLabel: "Buat Pesanan",
   submitNote:
-    "WhatsApp admin terbuka berisi data instalasi Anda, lalu Anda memilih cara bayar di halaman berikutnya.",
+    "Pesanan dicatat dulu, lalu Anda memilih cara bayar di halaman berikutnya. Data instalasi dikirim ke WhatsApp admin bersama konfirmasi pembayaran.",
   policyNote: {
     lead: "Dengan membuat pesanan, Anda setuju dengan",
     links: [
@@ -251,7 +256,17 @@ export const paymentCopy = {
 
   confirmLabel: "Konfirmasi Pembayaran",
   confirmNote:
-    "Membuka WhatsApp admin berisi ringkasan pesanan dan cara bayar yang Anda pilih — tidak perlu mengetik ulang apa pun.",
+    "Membuka WhatsApp admin berisi ringkasan pesanan, cara bayar yang Anda pilih, dan data instalasi lengkap — termasuk username & password WP-Admin, jadi admin bisa langsung memasang pluginnya.",
+
+  /**
+   * Field password di halaman pembayaran. Hanya muncul kalau memori tab sudah
+   * kosong (halaman dimuat ulang) — jalur normalnya password dibawa dari checkout,
+   * jadi pembeli tidak diminta mengisi dua kali.
+   */
+  passwordLabel: "Password WP-Admin",
+  passwordHint:
+    "Dibutuhkan admin untuk memasang pluginnya. Tidak disimpan browser, jadi kalau halaman ini dimuat ulang cukup isi sekali lagi di sini.",
+  passwordMissing: "Isi password WP-Admin dulu supaya pesanannya bisa langsung diproses.",
   confirmReminder:
     "Pastikan pembayarannya sudah terkirim sebelum menekan tombol ini, ya. Admin memverifikasi lalu mengirim lisensinya di chat yang sama.",
 

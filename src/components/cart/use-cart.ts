@@ -13,6 +13,8 @@ import {
   getKatalogSnapshot,
   getOrderServerSnapshot,
   getOrderSnapshot,
+  getPasswordServerSnapshot,
+  getPasswordSnapshot,
   getPaymentServerSnapshot,
   getPaymentSnapshot,
   normalizeQty,
@@ -22,6 +24,7 @@ import {
   subscribeCartDrawer,
   subscribeKatalog,
   subscribeOrder,
+  subscribePassword,
   subscribePayment,
   summarize,
   toLines,
@@ -127,6 +130,22 @@ export function useLastOrder() {
   const ready = useSyncExternalStore(subscribeNihil, trueDiKlien, falseDiServer);
 
   return { order, ready };
+}
+
+/**
+ * Password WP-Admin yang masih ada di memori tab.
+ *
+ * Dipakai halaman pembayaran untuk tahu apakah kredensialnya masih terbawa dari
+ * halaman checkout. Nilainya `""` pada render pertama (server & hidrasi) dan
+ * setelah halaman dimuat ulang — itulah sinyal untuk memunculkan field password
+ * sekali lagi, karena memori tab tidak pernah ditulis ke `localStorage`.
+ */
+export function usePasswordInstalasi() {
+  return useSyncExternalStore(
+    subscribePassword,
+    getPasswordSnapshot,
+    getPasswordServerSnapshot,
+  );
 }
 
 /**

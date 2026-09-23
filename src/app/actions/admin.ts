@@ -141,6 +141,25 @@ export async function simpanProdukAction(formData: FormData) {
   const unggahanFoto = berkasDari(formData.get("foto"));
   const unggahanLogo = berkasDari(formData.get("logo"));
 
+  /**
+   * Baris lama diambil lebih dulu, untuk dua hal:
+   * 1. tahu `public_id` gambar yang perlu dibersihkan saat diganti, dan
+   * 2. **mempertahankan kolom yang tidak lagi ada di formulir** (versi, tanggal
+   *    update, warna box 3D). Formulir yang lebih ringkas tidak boleh menghapus
+   *    data yang sudah ada — produk lama tetap utuh walau disimpan ulang.
+   */
+  const lama = idLama
+    ? (
+        await supabase
+          .from("products")
+          .select(
+            "image_url,image_public_id,logo_url,logo_public_id,version,updated,art_label,art_from,art_to,art_accent,art_tone",
+          )
+          .eq("id", idLama)
+          .single()
+      ).data
+    : null;
+
   const baris = {
     slug,
     name: nama,
@@ -152,28 +171,39 @@ export async function simpanProdukAction(formData: FormData) {
     rating: desimal(formData.get("rating")),
     reviews: angka(formData.get("reviews")),
     sold: angka(formData.get("sold")),
-    version: teks(formData.get("version")),
-    updated: teks(formData.get("updated")),
+    version: teks(formData.get("version")) || lama?.version || "",
+    updated: teks(formData.get("updated")) || lama?.updated || "",
     highlights: daftarBaris(formData.get("highlights")),
     specs: daftarPasangan(formData.get("specs")),
     faq: daftarPasangan(formData.get("faq")),
-    art_label: teks(formData.get("art_label")) || nama,
-    art_from: teks(formData.get("art_from"), "#1f2937") || "#1f2937",
-    art_to: teks(formData.get("art_to"), "#0b0b0c") || "#0b0b0c",
-    art_accent: teks(formData.get("art_accent")) || null,
-    art_tone: teks(formData.get("art_tone")) === "dark" ? "dark" : "light",
+    art_label: teks(formData.get("art_label")) || lama?.art_label || nama,
+    art_from: teks(formData.get("art_from")) || lama?.art_from || "#1f2937",
+    art_to: teks(formData.get("art_to")) || lama?.art_to || "#0b0b0c",
+    art_accent: teks(formData.get("art_accent")) || lama?.art_accent || null,
+    art_tone:
+      (teks(formData.get("art_tone")) || lama?.art_tone) === "dark" ? "dark" : "light",
     status: teks(formData.get("status")) === "draft" ? "draft" : "aktif",
   };
 
-  // Ambil data lama dulu (untuk tahu public_id yang perlu dibersihkan).
-  const lama = idLama
-    ? (await supabase.from("products").select("image_url,image_public_id,logo_url,logo_public_id").eq("id", idLama).single()).data
-    : null;
+  const urlFoto = teks(formData.get("image_url"));
+  const urlLogo = teks(formData.get("logo_url"));
 
-  let imageUrl = teks(formData.get("image_url")) || lama?.image_url || null;
-  let imagePublicId = teks(formData.get("image_url")) ? null : (lama?.image_public_id ?? null);
-  let logoUrl = teks(formData.get("logo_url")) || lama?.logo_url || null;
-  let logoPublicId = teks(formData.get("logo_url")) ? null : (lama?.logo_public_id ?? null);
+  /*
+   * Kolom URL di formulir selalu terisi URL yang sedang dipakai, jadi "isinya tidak
+   * kosong" BUKAN tanda gambar baru. Yang menentukan adalah apakah URL-nya berubah:
+   *
+   * - URL sama dengan yang tersimpan (admin cuma menekan Simpan) → `public_id`
+   *   dipertahankan. Kalau tidak, berkas lama di Cloudinary jadi yatim: tidak
+   *   dipakai lagi tapi tidak pernah bisa dihapus.
+   * - URL berbeda → gambar diganti, berkas Cloudinary lama langsung dibuang.
+   */
+  const gantiFoto = unggahanFoto !== null || (Boolean(urlFoto) && urlFoto !== lama?.image_url);
+  const gantiLogo = unggahanLogo !== null || (Boolean(urlLogo) && urlLogo !== lama?.logo_url);
+
+  let imageUrl = urlFoto || lama?.image_url || null;
+  let imagePublicId = gantiFoto ? null : (lama?.image_public_id ?? null);
+  let logoUrl = urlLogo || lama?.logo_url || null;
+  let logoPublicId = gantiLogo ? null : (lama?.logo_public_id ?? null);
 
   try {
     if (unggahanFoto) {
@@ -181,6 +211,8 @@ export async function simpanProdukAction(formData: FormData) {
       if (lama?.image_public_id) await hapusGambar(lama.image_public_id);
       imageUrl = hasil.url;
       imagePublicId = hasil.publicId;
+    } else if (gantiFoto && lama?.image_public_id) {
+      await hapusGambar(lama.image_public_id);
     }
 
     if (unggahanLogo) {
@@ -188,6 +220,8 @@ export async function simpanProdukAction(formData: FormData) {
       if (lama?.logo_public_id) await hapusGambar(lama.logo_public_id);
       logoUrl = hasil.url;
       logoPublicId = hasil.publicId;
+    } else if (gantiLogo && lama?.logo_public_id) {
+      await hapusGambar(lama.logo_public_id);
     }
   } catch (galat) {
     const pesan = galat instanceof Error ? galat.message : "unggahan gagal";

@@ -212,7 +212,14 @@
   }
 }
 
-/* Panggung gambar produk di halaman detail */
+/*
+ * Panggung gambar produk di halaman detail.
+ *
+ * Tingginya sengaja TIDAK dipatok (dulu `min-height: 340px`): artwork-nya memakai
+ * ukuran kartu katalog (88/152/164px), jadi panggung yang dipatok 340px akan
+ * menyisakan ruang kosong besar di sekeliling foto. Dengan padding, panggungnya
+ * selalu pas mengelilingi foto di semua breakpoint tanpa pernah mengubah ukurannya.
+ */
 .store .hero-stage {
   position: relative;
   border-radius: 26px;
@@ -221,7 +228,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 340px;
+  padding: 56px 24px;
 }
 .store .hero-stage .glow {
   position: absolute;

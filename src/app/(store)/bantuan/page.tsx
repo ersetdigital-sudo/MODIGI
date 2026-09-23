@@ -15,7 +15,7 @@ import {
   supportTopics,
   updateSection,
 } from "@/data/support";
-import { orderSteps, paymentNote, productStatsCopy } from "@/data/store";
+import { orderSteps, paymentNote } from "@/data/store";
 import { whatsappLink } from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
@@ -181,8 +181,8 @@ export default function SupportPage() {
           </ul>
 
           <p className="mt-4 text-[13px] text-[var(--muted)]">
-            Versi terbaru selalu ada di baris “{productStatsCopy.versionLabel}” pada tab
-            Spesifikasi di setiap halaman produk.
+            Rincian versi dan masa aktif tiap produk ada di tab Spesifikasi di halaman
+            produknya — persis seperti yang ditulis admin dari dashboard.
           </p>
         </section>
 

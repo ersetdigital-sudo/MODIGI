@@ -369,7 +369,7 @@ export const lisensiProduk: PolicyDoc = {
       bullets: [
         "Lisensi aktif 1 tahun sejak tanggal aktivasi.",
         "Versi baru muncul di menu Update wp-admin, tinggal klik Update seperti biasa.",
-        "Versi terbaru setiap produk selalu tercantum di tab Spesifikasi halaman produk.",
+        "Masa aktif dan cakupan update setiap produk tercantum di tab Spesifikasi halaman produk.",
         "Setelah masa aktif berakhir, plugin tetap jalan. Yang berhenti hanya update dan support.",
         "Perpanjangan bisa dilakukan kapan saja, tidak harus menunggu masa aktif habis.",
       ],

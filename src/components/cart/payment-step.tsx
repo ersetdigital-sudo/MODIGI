@@ -15,9 +15,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useLastOrder, usePaymentChoice } from "@/components/cart/use-cart";
+import { useLastOrder, usePasswordInstalasi, usePaymentChoice } from "@/components/cart/use-cart";
 import { WhatsappIcon } from "@/components/store/whatsapp-icon";
-import { metodeKindLabel, paymentCopy } from "@/data/store";
+import { checkoutCopy, metodeKindLabel, paymentCopy } from "@/data/store";
 import { paymentConfirmMessage, writePaymentChoice } from "@/lib/cart";
 import { formatRupiah } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -37,8 +37,15 @@ const ikonMetode: Record<MetodeBayarKind, typeof Landmark> = {
  * Alurnya: pembeli memilih satu cara bayar → rinciannya (nomor rekening atau
  * gambar QRIS) tampil di bawahnya → ia membayar → menekan **Konfirmasi
  * Pembayaran**, yang membuka WhatsApp admin dengan ringkasan lengkap. Jadi pembeli
- * tidak perlu mengetik apa pun ke chat, dan admin menerima satu pesan yang isinya
- * persis apa yang dibutuhkannya untuk mencocokkan mutasi bank.
+ * tidak perlu mengetik apa pun ke chat, dan admin menerima **satu** pesan berisi
+ * semuanya: cara bayar, nominal, keterangan pengirim, rincian item, dan data
+ * instalasi termasuk username + password WP-Admin (dari `paymentConfirmMessage`).
+ *
+ * Soal password: nilainya datang dari memori tab yang diisi halaman checkout
+ * (`simpanPasswordInstalasi`), jadi tidak pernah ditulis ke browser. Karena memori
+ * itu hilang kalau halaman dimuat ulang, field passwordnya **muncul sendiri** di
+ * kartu ringkasan begitu memorinya kosong — pembeli mengisinya sekali lagi di
+ * sini, dan admin tetap menerima kredensialnya bareng konfirmasi pembayaran.
  *
  * Kenapa halaman, bukan modal: nomor rekening perlu dibaca dengan tenang dan
  * sering dipindah ke aplikasi bank — modal yang menutup halaman justru menyulitkan
@@ -50,12 +57,23 @@ const ikonMetode: Record<MetodeBayarKind, typeof Landmark> = {
 export function PaymentStep({ methods }: { methods: MetodeBayar[] }) {
   const { order, ready } = useLastOrder();
   const { pilihan: tersimpan } = usePaymentChoice();
+  const passwordTab = usePasswordInstalasi();
   const router = useRouter();
 
   const [dipilih, setDipilih] = useState<string | null>(null);
   const [referensi, setReferensi] = useState("");
   const [referensiDisentuh, setReferensiDisentuh] = useState(false);
   const [tersalin, setTersalin] = useState<string | null>(null);
+  const [password, setPassword] = useState("");
+  const [passwordKosong, setPasswordKosong] = useState(false);
+
+  /*
+   * Field password hanya perlu muncul kalau memori tab sudah tidak memegangnya —
+   * mis. pembeli memuat ulang halaman ini sebelum menekan konfirmasi. Syarat
+   * `ready` membuat field ini tidak pernah ikut ter-render di server (di sana
+   * `passwordTab` selalu kosong), jadi HTML awal dan render pertama di browser sama.
+   */
+  const perluPassword = ready && !passwordTab;
 
   /**
    * Pilihan sebelumnya hanya dipakai kalau pesanannya memang pesanan yang sedang
@@ -97,6 +115,17 @@ export function PaymentStep({ methods }: { methods: MetodeBayar[] }) {
   const konfirmasi = () => {
     if (!order) return;
 
+    // Isian di layar menang atas memori tab: kalau field-nya tampil (memori
+    // kosong), yang dipakai adalah apa yang baru saja diketik pembeli.
+    const passwordFinal = password.trim() || passwordTab;
+
+    if (!passwordFinal) {
+      setPasswordKosong(true);
+      return;
+    }
+
+    setPasswordKosong(false);
+
     const pilihan: PaymentChoice = {
       orderNo: order.orderNo,
       methodId: aktif?.id ?? "",
@@ -111,7 +140,7 @@ export function PaymentStep({ methods }: { methods: MetodeBayar[] }) {
     // Buka WhatsApp dulu (masih di dalam gestur klik, jadi tidak diblokir browser),
     // baru pindah ke halaman konfirmasi.
     window.open(
-      whatsappLink(paymentConfirmMessage(order, pilihan, aktif)),
+      whatsappLink(paymentConfirmMessage(order, pilihan, aktif, passwordFinal)),
       "_blank",
       "noopener,noreferrer",
     );
@@ -355,6 +384,35 @@ export function PaymentStep({ methods }: { methods: MetodeBayar[] }) {
             {tersalin === "nominal" ? paymentCopy.copiedLabel : paymentCopy.copyTotalLabel}
           </button>
         </div>
+
+        {perluPassword ? (
+          <div className="mt-4 rounded-2xl border border-[var(--line)] bg-[#faf8f4] p-4">
+            <label htmlFor="wp-password-bayar" className="field-label">
+              {paymentCopy.passwordLabel}
+            </label>
+
+            <input
+              id="wp-password-bayar"
+              className="input mt-2"
+              type="password"
+              autoComplete="current-password"
+              placeholder={checkoutCopy.fields.wpPassword.placeholder}
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setPasswordKosong(false);
+              }}
+            />
+
+            <p className="hint mt-2">{paymentCopy.passwordHint}</p>
+
+            {passwordKosong ? (
+              <p className="mt-2 text-[12.5px] font-semibold text-[#a32b1d]">
+                {paymentCopy.passwordMissing}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
 
         <button type="button" onClick={konfirmasi} className="btn btn-wa mt-5 w-full">
           <WhatsappIcon className="size-[18px]" />

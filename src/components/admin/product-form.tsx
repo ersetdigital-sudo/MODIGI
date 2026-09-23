@@ -15,12 +15,19 @@ import type { BarisKategori, BarisProduk } from "@/lib/supabase";
  * diisi di sini langsung tampil di halaman detail produk dengan susunan yang
  * identik dengan produk lama (tagline → deskripsi → fitur → spesifikasi → FAQ).
  *
+ * **Yang sengaja TIDAK ada di sini**: kolom versi, tanggal update, dan warna box
+ * 3D. Ketiganya dulu bisa diatur, tapi halaman detail produk tidak menampilkannya
+ * (versi & tanggal sudah tidak jadi kartu statistik maupun baris Spesifikasi),
+ * jadi memintanya cuma menambah pekerjaan tanpa mengubah apa pun yang dilihat
+ * pembeli. Nilainya tetap tersimpan utuh di database untuk produk lama.
+ *
  * Dua hal yang perlu diketahui admin:
- * - **Gambar**: ada dua kanal. Unggah berkas (diproses ke Cloudinary, maks 5 MB)
- *   atau tempel URL. Kalau keduanya diisi, berkas yang menang — dan berkas lama
- *   di Cloudinary otomatis dihapus supaya kuota tidak menumpuk.
- * - **Daftar bertingkat** (fitur, spesifikasi, FAQ) ditulis satu baris satu item
- *   supaya tidak perlu editor rumit; formatnya dijelaskan di bawah tiap kolom.
+ * - **Foto produk** adalah satu-satunya gambar yang tampil di katalog dan halaman
+ *   detail. Ada dua kanal: unggah berkas (diproses ke Cloudinary, maks 5 MB) atau
+ *   tempel URL. Kalau keduanya diisi, berkas yang menang — dan berkas lama di
+ *   Cloudinary otomatis dihapus supaya kuota tidak menumpuk.
+ * - **Logo brand hanya dipakai sebagai cadangan** kalau produknya belum punya
+ *   foto: logo itu tampil di muka box 3D. Begitu fotonya ada, logo tidak dipakai.
  */
 export function ProductForm({
   product,
@@ -177,38 +184,18 @@ export function ProductForm({
           <Field label="Jumlah ulasan" htmlFor="reviews">
             <Input id="reviews" name="reviews" inputMode="numeric" defaultValue={product?.reviews ?? 0} />
           </Field>
-
-          <Field label="Versi" htmlFor="version">
-            <Input
-              id="version"
-              name="version"
-              defaultValue={product?.version ?? ""}
-              placeholder="3.25.x"
-            />
-          </Field>
-
-          <Field
-            label="Tanggal update"
-            htmlFor="updated"
-            hint="Ditulis apa adanya, mis. 12 Sep 2026."
-          >
-            <Input
-              id="updated"
-              name="updated"
-              defaultValue={product?.updated ?? ""}
-              placeholder="12 Sep 2026"
-            />
-          </Field>
         </div>
       </Card>
 
       <Card
         title="Gambar produk"
-        description="Unggah ke Cloudinary atau tempel URL. Kalau keduanya diisi, berkas unggahan yang dipakai."
+        description="Foto ini yang tampil di katalog dan di halaman detail produk. Unggah ke Cloudinary atau tempel URL — kalau keduanya diisi, berkas unggahan yang dipakai."
       >
         <div className="grid gap-8 lg:grid-cols-2">
           <div className="flex flex-col gap-4">
-            <p className="text-[13px] font-bold text-[#3a3a3f]">Foto produk</p>
+            <p className="text-[13px] font-bold text-[#3a3a3f]">
+              Foto produk <span className="font-normal text-[#6f6f74]">(tampil di situs)</span>
+            </p>
 
             <div className="flex items-start gap-4">
               <span className="grid size-24 shrink-0 place-items-center overflow-hidden rounded-xl border border-[#e8e8ec] bg-[#f7f7f9]">
@@ -240,7 +227,7 @@ export function ProductForm({
                 <Field
                   label="atau URL gambar"
                   htmlFor="image_url"
-                  hint="Kosongkan untuk memakai box 3D berlogo (tanpa foto)."
+                  hint="Kosongkan kalau produknya belum punya foto — katalog & halaman detail akan memakai box 3D berlogo brand."
                 >
                   <Input
                     id="image_url"
@@ -255,7 +242,12 @@ export function ProductForm({
 
           <div className="flex flex-col gap-4">
             <p className="text-[13px] font-bold text-[#3a3a3f]">
-              Logo resmi brand <span className="font-normal text-[#6f6f74]">(muka box 3D)</span>
+              Logo brand <span className="font-normal text-[#6f6f74]">(opsional, untuk box cadangan)</span>
+            </p>
+
+            <p className="text-[12.5px] leading-relaxed text-[#6f6f74]">
+              Dipakai hanya kalau produknya belum punya foto: logo ini tampil di muka box 3D di
+              kartu katalog. Begitu fotonya ada, logo tidak lagi terpakai.
             </p>
 
             <div className="flex items-start gap-4">
@@ -275,7 +267,11 @@ export function ProductForm({
               </span>
 
               <div className="min-w-0 flex-1 flex-col gap-3">
-                <Field label="Unggah logo" htmlFor="logo" hint="Pakai logo resmi vendor, jangan dimodifikasi.">
+                <Field
+                  label="Unggah logo"
+                  htmlFor="logo"
+                  hint="Pakai logo resmi vendor, jangan dimodifikasi."
+                >
                   <input
                     id="logo"
                     name="logo"
@@ -302,59 +298,6 @@ export function ProductForm({
           Cloudinary menyimpan berkasnya; URL dan public_id-nya dicatat di database supaya
           berkas lama bisa dihapus otomatis saat diganti.
         </p>
-      </Card>
-
-      <Card
-        title="Box produk (tampilan cadangan)"
-        description="Dipakai kalau tidak ada foto: satu box 3D dengan logo resmi dan warna brand."
-      >
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <Field label="Label di box" htmlFor="art_label" hint="Biasanya nama produk.">
-            <Input id="art_label" name="art_label" defaultValue={product?.art_label ?? ""} />
-          </Field>
-
-          <Field label="Warna muka" htmlFor="art_from">
-            <Input
-              id="art_from"
-              name="art_from"
-              type="color"
-              defaultValue={product?.art_from ?? "#1f2937"}
-              className="h-11 cursor-pointer p-1"
-            />
-          </Field>
-
-          <Field label="Warna bayangan" htmlFor="art_to">
-            <Input
-              id="art_to"
-              name="art_to"
-              type="color"
-              defaultValue={product?.art_to ?? "#0b0b0c"}
-              className="h-11 cursor-pointer p-1"
-            />
-          </Field>
-
-          <Field label="Warna aksen" htmlFor="art_accent" hint="Opsional — sisi & bibir box.">
-            <Input
-              id="art_accent"
-              name="art_accent"
-              type="color"
-              defaultValue={product?.art_accent ?? "#c9a664"}
-              className="h-11 cursor-pointer p-1"
-            />
-          </Field>
-
-          <Field
-            label="Jenis logo"
-            htmlFor="art_tone"
-            className="sm:col-span-2"
-            hint="Pilih dark kalau logo brand-nya berwarna terang."
-          >
-            <Select id="art_tone" name="art_tone" defaultValue={product?.art_tone ?? "light"}>
-              <option value="light">Terang — logo berwarna gelap</option>
-              <option value="dark">Gelap — logo berwarna terang</option>
-            </Select>
-          </Field>
-        </div>
       </Card>
 
       <Card title="Isi halaman detail" description="Fitur, spesifikasi, dan FAQ — satu baris satu item.">

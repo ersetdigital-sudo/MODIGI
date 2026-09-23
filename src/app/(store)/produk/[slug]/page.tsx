@@ -130,16 +130,23 @@ export default async function ProductDetailPage(props: PageProps<"/produk/[slug]
             seluruh halaman ~19px di layar 320px. */}
         <div className="mt-5 grid items-start gap-8 lg:grid-cols-[1.35fr_1fr]">
           <div className="min-w-0">
+            {/*
+              Ukuran artwork-nya sengaja memakai angka yang sama dengan kartu
+              katalog (88/152/164px) supaya foto produk tampil seukuran di katalog
+              maupun di halaman detail. `p-3` dipasang di bingkai putihnya, bukan di
+              artwork, jadi yang membesar adalah bingkainya — bukan fotonya.
+            */}
             <div className="hero-stage">
               <span className="grid-lines" aria-hidden="true" />
               <span className="glow" style={{ background: glow }} aria-hidden="true" />
 
-              <div className="cover-box grid size-[220px] place-items-center overflow-hidden rounded-3xl bg-white p-3 shadow-2xl sm:size-[240px]">
-                <PluginBoxArt
-                  art={product.art}
-                  className="p-2"
-                  sizes="(min-width: 640px) 240px, 220px"
-                />
+              <div className="cover-box grid place-items-center overflow-hidden rounded-3xl bg-white p-3 shadow-2xl">
+                <span className="block size-[88px] overflow-hidden rounded-2xl sm:size-[152px] lg:size-[164px]">
+                  <PluginBoxArt
+                    art={product.art}
+                    sizes="(min-width: 1024px) 164px, (min-width: 640px) 152px, 88px"
+                  />
+                </span>
               </div>
             </div>
 

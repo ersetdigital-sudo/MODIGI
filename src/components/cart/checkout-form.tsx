@@ -10,9 +10,8 @@ import { buatPesananAction } from "@/app/actions/pesanan";
 import { CartItemRow } from "@/components/cart/cart-item-row";
 import { useCart } from "@/components/cart/use-cart";
 import { cartCopy, checkoutCopy } from "@/data/store";
-import { createOrder, orderMessage, writeLastOrder } from "@/lib/cart";
+import { createOrder, simpanPasswordInstalasi, writeLastOrder } from "@/lib/cart";
 import { formatRupiah } from "@/lib/format";
-import { whatsappLink } from "@/lib/whatsapp";
 
 const kosong = { name: "", whatsapp: "", domain: "", wpUser: "", wpPassword: "" };
 
@@ -26,18 +25,19 @@ const FORM_ID = "form-checkout";
  * pesan WhatsApp, jadi admin tidak perlu menanyakan ulang lewat chat.
  *
  * ⚠️ Soal password: yang tersimpan di `localStorage` **tidak memuat password**
- * (lihat `createOrder` di `lib/cart.ts`). Password hanya ada di memori form selama
- * halaman ini terbuka, dikirim di pesan WhatsApp, lalu dibuang dari state. Halaman
- * konfirmasi juga menyebutkan hal ini supaya pembeli tahu harus menggantinya.
+ * (lihat `createOrder` di `lib/cart.ts`). Password hanya ada di memori form dan
+ * dipindahkan ke memori tab (`simpanPasswordInstalasi`) supaya ikut terkirim saat
+ * pembeli menekan Konfirmasi Pembayaran di halaman berikutnya.
  *
  * Tombol "Buat Pesanan" berada di kartu ringkasan (kanan) tapi men-submit formulir
  * di kartu kiri lewat atribut `form` — jadi di layar lebar orang melihat totalnya
  * persis di sebelah tombolnya.
  *
- * Setelah pesanan dibuat, pembeli diarahkan ke `/checkout/pembayaran` (pilih cara
- * bayar + konfirmasi). WhatsApp tetap dibuka di sini karena **hanya di langkah ini
- * password WP-Admin ada di memori** — dan admin membutuhkannya untuk memasang
- * pluginnya. Konfirmasi pembayarannya menyusul sebagai pesan kedua.
+ * Setelah pesanan dibuat, pembeli langsung diarahkan ke `/checkout/pembayaran`
+ * (pilih cara bayar + konfirmasi). **Tidak ada WhatsApp yang dibuka di sini**:
+ * pesanan lengkap — termasuk akses login WP-Admin — baru dikirim saat pembeli
+ * menekan Konfirmasi Pembayaran, jadi admin menerima satu pesan utuh lengkap
+ * dengan bukti pembayarannya, bukan dua pesan yang harus digabung sendiri.
  */
 export function CheckoutForm() {
   const { lines, count, total, savings, ready, clear } = useCart();
@@ -71,19 +71,18 @@ export function CheckoutForm() {
     writeLastOrder(order);
     clear();
 
-    // Password dibaca dari state saat dikirim, lalu dibuang — tidak ikut tersimpan.
-    const pesan = orderMessage(order, form.wpPassword);
+    // Password dipindahkan ke memori tab (bukan localStorage) supaya halaman
+    // pembayaran bisa mengirimkannya bersama konfirmasi pembayaran.
+    simpanPasswordInstalasi(form.wpPassword);
     setForm({ ...kosong });
 
-    // Buka WhatsApp lebih dulu (masih di dalam gestur klik pengguna, jadi tidak
-    // diblokir), baru pindah ke halaman pembayaran.
-    window.open(whatsappLink(pesan), "_blank", "noopener,noreferrer");
     router.push("/checkout/pembayaran");
 
     // Pesanan juga dicatat ke database supaya bisa dikelola di dashboard admin
     // (status, data instalasi, pembayaran). Sengaja TIDAK ditunggu: pembeli tidak
-    // boleh gagal checkout hanya karena penyimpanan di server bermasalah — pesan
-    // WhatsApp-nya sudah terkirim dan itu jalur utama pesanannya.
+    // boleh gagal checkout hanya karena penyimpanan di server bermasalah — nomor
+    // pesanannya sudah ada di browser, dan konfirmasi pembayarannya tetap bisa
+    // dikirim dari halaman berikutnya walau baris database-nya gagal dibuat.
     buatPesananAction({
       orderNo: order.orderNo,
       customer: order.customer,

@@ -103,13 +103,13 @@ langsung tayang di situs
 | `/kategori` | Semua kategori dengan jumlah produk & harga mulai, plus daftar produknya |
 | `/testimoni` | Ulasan dari semua produk, dikelompokkan per produk |
 | `/keranjang` | Daftar item + ubah jumlah + ringkasan (hemat, total) |
-| `/checkout` | Formulir data instalasi + ringkasan + persetujuan lisensi |
-| `/checkout/pembayaran` | Pilih cara bayar (transfer bank / QRIS / e-wallet) + konfirmasi ke WhatsApp |
+| `/checkout` | Formulir data instalasi + ringkasan + persetujuan lisensi (belum mengirim WhatsApp) |
+| `/checkout/pembayaran` | Pilih cara bayar (transfer bank / QRIS / e-wallet), lalu **Konfirmasi Pembayaran** mengirim pesanan lengkap + akses login ke WhatsApp |
 | `/checkout/selesai` | Nomor pesanan, status pembayaran, rincian, langkah berikutnya |
 | `/kebijakan/*` | Empat dokumen: Syarat & Ketentuan, Privasi, Refund, Lisensi |
 | `/admin` | **Dashboard**: ringkasan angka + pesanan terbaru (tidak diindeks) |
 | `/admin/produk` | Daftar produk: ubah status aktif/draft, edit, hapus |
-| `/admin/produk/baru` · `/admin/produk/[id]` | Formulir produk: identitas, harga, gambar (Cloudinary), box produk, isi halaman |
+| `/admin/produk/baru` · `/admin/produk/[id]` | Formulir produk: identitas, harga, foto (Cloudinary), isi halaman |
 | `/admin/kategori` | Tambah/ubah/hapus kategori + urutannya |
 | `/admin/pesanan` · `/admin/pesanan/[id]` | Pesanan masuk: data instalasi, status, pencatatan pembayaran |
 | `/admin/pembayaran` | Nomor rekening, QRIS (unggah gambar), e-wallet + urutannya |
@@ -124,7 +124,9 @@ langsung tayang di situs
 - Katalog dengan **chip kategori, pencarian, dan urutan** (terlaris, rating, harga) —
   filter dibaca dari URL (`?q=`, `?kategori=`, `?urut=`) sehingga hasilnya bisa dibagikan
 - Kartu produk: harga coret + chip diskon, rating, **seal verifikasi**, tombol keranjang
-- Halaman detail: hero-stage artwork, **3 kartu statistik**, tab
+- Halaman detail: hero-stage artwork yang **ukurannya sama dengan kartu katalog**
+  (88/152/164px — foto produk tampil seukuran di katalog maupun di detail),
+  **3 kartu statistik**, tab
   **Fitur / Deskripsi / Spesifikasi / FAQ**, buy box yang menempel saat scroll,
   blok "Cara pesan", produk terkait, dan bar beli khusus mobile
 - **Ulasan ala marketplace**: ringkasan rating + sebaran bintang, filter per bintang,
@@ -136,17 +138,22 @@ langsung tayang di situs
   jumlah di header & tab bar mobile ikut berubah tanpa reload
 - **Checkout** — formulir **Data Instalasi** (nama, WhatsApp, domain, username &
   password WP-Admin), ringkasan pesanan yang menempel saat scroll, dan persetujuan
-  lisensi. Password WP-Admin **tidak pernah disimpan** — hanya ikut pesan WhatsApp
+  lisensi. Menekan **Buat Pesanan** di sini **belum** membuka WhatsApp: pesanan
+  dicatat, lalu pembeli diarahkan ke halaman pembayaran. Password WP-Admin hanya
+  hidup di memori tab (tidak pernah ditulis ke `localStorage`) sampai konfirmasi
 - **Pembayaran** — halaman `/checkout/pembayaran` menampilkan nomor rekening, nama
   pemilik, dan gambar QRIS yang diatur admin, lengkap dengan tombol **salin** untuk
   nomor rekening, nominal, dan nomor pesanan. Pembeli memilih satu metode, menekan
-  **Konfirmasi Pembayaran**, dan seluruh datanya terkirim ke WhatsApp admin — tanpa
-  mengetik ulang apa pun
-- **Alur order dua pesan WhatsApp**: (1) saat pesanan dibuat, admin menerima data
-  instalasi **termasuk password WP-Admin** — jadi proses pemasangan bisa jalan
-  sementara pembeli membayar; (2) saat pembeli menekan Konfirmasi Pembayaran, admin
-  menerima pesan kedua berisi metode, nominal, keterangan pengirim, dan rincian
-  pesanannya. Tombol "Tanya Dulu" juga tetap tersedia
+  **Konfirmasi Pembayaran**, dan **satu pesan WhatsApp** berangkat berisi semuanya:
+  cara bayar, nominal, keterangan pengirim, rincian item, dan data instalasi
+  **termasuk username + password WP-Admin** — admin bisa langsung memasang pluginnya
+  tanpa menanyakan apa pun lagi
+- **Konfirmasi pembayaran adalah pemicu kirim.** Karena WhatsApp baru dibuka di
+  langkah itu, pesanan yang batal di tengah jalan tidak pernah sampai ke admin —
+  yang masuk ke chat hanya pesanan yang benar-benar mau dibayar. Kalau halaman
+  pembayaran dimuat ulang, password-nya (yang memang tidak disimpan) diminta sekali
+  lagi di kartu ringkasan, jadi admin tetap menerima kredensialnya. Tombol
+  "Tanya Dulu" juga tetap tersedia
 - **Konfirmasi pesanan** — nomor pesanan, status pembayaran (sudah/belum
   dikonfirmasi + metodenya), rincian item, dan langkah berikutnya. Isinya dibaca
   dari `localStorage`, **bukan dari URL**, jadi nomor pesanan & data pembeli tidak
@@ -154,12 +161,16 @@ langsung tayang di situs
 
 **Dashboard admin** (`/admin`, tidak diindeks mesin pencari)
 
-- **Produk** — tambah/edit/hapus, unggah **foto produk & logo resmi ke Cloudinary**
-  (berkas lama otomatis dihapus supaya kuota tidak menumpuk), atau tempel URL kalau
-  gambarnya sudah ada di tempat lain. Ada juga pemilih warna & tombol aktif/draft.
+- **Produk** — tambah/edit/hapus, unggah **foto produk ke Cloudinary** (berkas lama
+  otomatis dihapus supaya kuota tidak menumpuk), atau tempel URL kalau gambarnya sudah
+  ada di tempat lain. Ada juga tombol aktif/draft.
 - **Formulir yang sama untuk produk baru dan produk lama** — artinya produk yang
-  ditambah sendiri lewat dashboard tampil persis seperti produk lain: box produk,
-  harga coret, kartu statistik, tab Fitur/Deskripsi/Spesifikasi/FAQ, produk terkait.
+  ditambah sendiri lewat dashboard tampil persis seperti produk lain: harga coret,
+  kartu statistik, tab Fitur/Deskripsi/Spesifikasi/FAQ, produk terkait.
+- **Formulirnya sengaja ringkas**: tidak ada kolom versi, tanggal update, atau warna
+  box 3D — ketiganya tidak muncul di halaman detail produk, jadi memintanya cuma
+  menambah pekerjaan. Kalau produknya belum punya foto, katalog memakai box 3D dari
+  logo brand (satu-satunya kolom gambar cadangan yang tersisa).
 - **Kategori** — tambah, ubah, hapus, atur urutan. Kategori yang masih dipakai
   produk tidak bisa dihapus (sistem yang mencegah, bukan peringatan).
 - **Pesanan** — setiap checkout tercatat otomatis: data instalasi (nama, WhatsApp,
@@ -225,7 +236,7 @@ Halaman-halaman dashboard tidak diindeks mesin pencari dan tidak memakai chrome 
 
 | Tabel | Isi |
 | --- | --- |
-| `products` | Produk: harga, harga resmi, statistik, isi halaman, gambar Cloudinary, warna box, status |
+| `products` | Produk: harga, harga resmi, statistik, isi halaman, foto & logo Cloudinary, status |
 | `categories` | Kategori + `sort_order` (urutan tampil di beranda) |
 | `orders` | Pesanan: nomor, data pembeli, domain, username WP-Admin, total, status |
 | `order_items` | Baris item per pesanan (nama, harga, jumlah, subtotal) |
@@ -543,32 +554,35 @@ Beberapa keputusan yang sengaja diambil, dan alasannya:
    halaman produk, ikon di header, dan FAB di tab bar mobile bisa membuka panel yang
    sama tanpa saling mengirim prop.
 10. **Checkout tidak pernah gagal karena server.** Pesanan disimpan di
-   `localStorage` (dibaca halaman konfirmasi), dikirim ke WhatsApp admin, dan
-   **juga** dicatat ke database lewat server action `buatPesananAction`. Pencatatan
-   ke database sengaja tidak ditunggu: WhatsApp adalah jalur utama pesanannya, jadi
-   kalau penyimpanan di server bermasalah, pembeli tetap bisa menyelesaikan order.
+   `localStorage` (dibaca halaman konfirmasi), dikirim ke WhatsApp admin saat
+   konfirmasi pembayaran, dan **juga** dicatat ke database lewat server action
+   `buatPesananAction`. Pencatatan ke database sengaja tidak ditunggu: WhatsApp
+   adalah jalur utama pesanannya, jadi kalau penyimpanan di server bermasalah,
+   pembeli tetap bisa menyelesaikan order.
    Kalau database tidak bisa dihubungi, hal yang sama juga berlaku untuk rincian
    cara bayar: halaman pembayaran menyebut apa adanya bahwa rekeningnya dikirim
    admin lewat chat, bukan menampilkan nomor contoh yang bisa disalahgunakan.
-11. **Dua pesan WhatsApp, dan itu disengaja.** Pesan pertama dikirim saat tombol
-   "Buat Pesanan" ditekan — isinya data instalasi, **termasuk password WP-Admin**,
-   yang hanya ada di memori form saat itu. Pesan kedua dikirim dari halaman
-   pembayaran saat pembeli menekan "Konfirmasi Pembayaran" — isinya metode bayar,
-   nominal, keterangan pengirim, dan rincian pesanan. Alternatifnya (satu pesan di
-   akhir) berarti password harus ditahan di browser sampai pembeli selesai bayar —
-   kalau halamannya di-refresh, kredensialnya hilang dan admin harus menanyakannya
-   lewat chat. Rincian cara bayar sendiri **tidak diketik ulang** oleh pembeli:
-   isinya datang dari tabel `payment_methods` yang diatur admin, jadi halaman
-   pembeli selalu memakai nomor rekening terbaru tanpa deploy ulang.
+11. **Satu pesan WhatsApp, dikirim saat pembeli menekan Konfirmasi Pembayaran.**
+   Isinya digabung supaya admin tidak perlu menyusun sendiri: cara bayar, nominal,
+   keterangan pengirim, rincian pesanan, dan data instalasi **termasuk password
+   WP-Admin**. Efek sampingnya yang justru diinginkan: chat hanya berisi pesanan
+   yang serius mau dibayar — pesanan yang ditinggalkan di tengah jalan tidak pernah
+   mengirim apa pun. Rincian cara bayar sendiri **tidak diketik ulang** oleh
+   pembeli: isinya datang dari tabel `payment_methods` yang diatur admin, jadi
+   halaman pembeli selalu memakai nomor rekening terbaru tanpa deploy ulang.
 12. **Password WP-Admin tidak disimpan di mana pun.** Formulir checkout meminta
    kredensial WP-Admin (dipakai admin untuk memasang pluginnya), tapi
    `createOrder()` sengaja tidak memasukkannya ke objek pesanan, dan tabel `orders`
-   memang **tidak punya kolomnya** (lihat `supabase/schema.sql`). Password hanya ada
-   di memori form, ikut ke pesan WhatsApp, lalu dibuang dari state. Dashboard admin
-   pun tidak menampilkannya — yang tersimpan hanya username. Halaman konfirmasi & 
-   formulir memberi catatan agar password diganti setelah plugin terpasang.
-   Kalau keamanan jadi prioritas, langkah berikutnya adalah akun WP sementara atau
-   tautan instalasi sekali-pakai — sudah masuk daftar di bawah.
+   memang **tidak punya kolomnya** (lihat `supabase/schema.sql`). Di antara dua
+   halaman, password dipegang **variabel modul** (`simpanPasswordInstalasi`) — bukan
+   `localStorage`/`sessionStorage`, jadi tidak ada yang tertulis ke disk dan
+   nilainya hilang begitu tab ditutup. Konsekuensinya ditangani, bukan disembunyikan:
+   kalau halaman pembayaran dimuat ulang, memori itu kosong dan field password
+   muncul sendiri di kartu ringkasan, wajib diisi sebelum tombol konfirmasi jalan.
+   Dashboard admin pun tidak menampilkannya — yang tersimpan hanya username.
+   Halaman konfirmasi & formulir memberi catatan agar password diganti setelah
+   plugin terpasang. Kalau keamanan jadi prioritas, langkah berikutnya adalah akun
+   WP sementara atau tautan instalasi sekali-pakai — sudah masuk daftar di bawah.
 12. **Drawer keranjang memakai `inert` saat tertutup.** Panel yang cuma digeser ke
    luar layar tetap bisa di-Tab — jadi panelnya benar-benar dimatikan (bukan sekadar
    transparan), `Escape` menutup, fokus dipindah ke panel saat dibuka dan
@@ -612,7 +626,7 @@ Semuanya sudah ditandai `← PERLU DIPUTUSKAN` di `src/data/policies.ts`:
 | Hal | Nilai sekarang | Ada di |
 | --- | --- | --- |
 | **Nomor rekening & QRIS** | Daftar metode di dashboard admin (`/admin/pembayaran`); database **dibuat kosong**, jadi wajib diisi sebelum dipakai jualan | `payment_methods` |
-| **Kredensial WP-Admin** | Diminta di checkout lalu dikirim lewat WhatsApp (tidak disimpan) | `data/store.ts` → `checkoutCopy.passwordNote` |
+| **Kredensial WP-Admin** | Diminta di checkout, ikut terkirim di pesan konfirmasi pembayaran (tidak disimpan) | `data/store.ts` → `checkoutCopy.passwordNote` |
 | **Password dashboard admin** | `ADMIN_PASSWORD` di environment variable — ganti dari nilai contoh | Vercel & `.env.local` |
 | **Data pesanan tersimpan di server** | Ya: nama, WhatsApp, domain, username WP-Admin, item, pembayaran | Supabase (`orders`, `order_items`, `payments`) |
 | **Cara bayar yang tampil ke pembeli** | Nomor rekening, nama pemilik, gambar QRIS — diatur admin, bukan ditulis di kode | Supabase (`payment_methods`) + Cloudinary |
@@ -636,7 +650,8 @@ Nomor WhatsApp, email (`halo@modigi.id`), jam operasional, dan seluruh angka kla
 - [x] **Halaman `/keranjang`** — ubah jumlah, hapus item, ringkasan, hemat
 - [x] **Halaman `/checkout`** — data instalasi + domain, ringkasan, persetujuan lisensi
 - [x] **Halaman `/checkout/pembayaran`** — transfer bank / QRIS / e-wallet dari
-      dashboard, tombol salin, dan konfirmasi pembayaran yang mengirim data ke WhatsApp
+      dashboard, tombol salin, dan konfirmasi pembayaran yang mengirim pesanan
+      lengkap (termasuk akses login) dalam satu pesan WhatsApp
 - [x] **Konfirmasi pesanan** — nomor pesanan, status pembayaran, rincian, langkah berikutnya
 - [x] **Halaman `/kategori` & `/testimoni`** — semua tautan header & footer hidup
 - [x] **Dashboard admin** — produk, kategori, pesanan, pembayaran, unggah Cloudinary

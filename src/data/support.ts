@@ -102,7 +102,7 @@ export const updateSection = {
   facts: [
     "Versi baru muncul di menu Update pada wp-admin, sama seperti plugin lain.",
     "Update tersedia 1 tahun sejak aktivasi, dan support WhatsApp 30 hari.",
-    "Versi terbaru tiap produk selalu tercantum di tab Spesifikasi halaman produk.",
+    "Masa aktif dan cakupan update tiap produk tercantum di tab Spesifikasi halaman produk.",
     "Sesudah masa aktif berakhir, plugin tetap jalan — yang berhenti hanya update otomatis.",
   ],
 };

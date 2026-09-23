@@ -3,7 +3,6 @@
 import { Check } from "lucide-react";
 import { useState } from "react";
 
-import { productStatsCopy } from "@/data/store";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types";
 
@@ -25,15 +24,16 @@ type TabId = (typeof tabs)[number]["id"];
 export function ProductTabs({ product }: { product: Product }) {
   const [active, setActive] = useState<TabId>("fitur");
 
-  // Baris versi dihitung dari data produk (bukan ditulis ulang di `specs`),
-  // jadi versi & tanggal update tetap satu sumber: `data/products.ts`.
-  const specs: [string, string][] = [
-    [
-      productStatsCopy.versionLabel,
-      `v${product.version} · update ${product.updated}`,
-    ],
-    ...product.specs,
-  ];
+  /**
+   * Tabel Spesifikasi berisi persis apa yang ditulis admin di formulir produk.
+   *
+   * Sebelumnya ada baris "Versi terbaru" yang disuntik otomatis dari kolom
+   * `version` + `updated`. Baris itu dihapus: halaman detail tidak lagi
+   * menampilkan versi/tanggal, dan menambahkannya diam-diam membuat tabelnya tidak
+   * sama dengan yang dilihat admin di dashboard. Kalau memang perlu dicantumkan,
+   * tulis sebagai baris biasa: `Versi terbaru | 3.25.x`.
+   */
+  const { specs } = product;
 
   return (
     <div className="mt-9">

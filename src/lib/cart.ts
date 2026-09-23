@@ -361,13 +361,70 @@ export function readLastOrder(): Order | null {
   return uraiOrder(mentah);
 }
 
+// ---------------------------------------------------------------------------
+// Data instalasi yang hanya hidup di memori
+// ---------------------------------------------------------------------------
+
 /**
- * Teks pesanan yang dikirim ke WhatsApp admin.
+ * Password WP-Admin selama pembeli berpindah dari checkout ke halaman pembayaran.
  *
- * Ditulis apa adanya (bukan tabel/kode) supaya admin bisa langsung membalas
- * tanpa perlu membuka sistem apa pun — ini pengganti halaman admin yang belum ada.
+ * Disimpan di **variabel modul**, bukan `localStorage`/`sessionStorage`: nilainya
+ * tidak pernah ditulis ke disk, dan hilang begitu tab ditutup atau halaman dimuat
+ * ulang. Jadi tidak ada kredensial yang mengendap di browser — janji yang sama
+ * seperti sebelumnya.
+ *
+ * Ongkosnya: kalau halaman pembayaran dimuat ulang, passwordnya ikut hilang dan
+ * pembeli mengisinya sekali lagi di halaman itu (field-nya muncul sendiri kalau
+ * memorinya kosong — lihat `PaymentStep`). Itu sebabnya objek `Order` yang
+ * disimpan di `localStorage` tetap **tidak** memuat password.
+ *
+ * Dibungkus sebagai store eksternal kecil — sama polanya dengan keranjang &
+ * katalog di atas — supaya halaman pembayaran bisa bereaksi tanpa menerka-nerka,
+ * dan karena aturan lint React melarang menulis state di dalam `useEffect`.
  */
-export function orderMessage(order: Order, wpPassword?: string) {
+export const PASSWORD_EVENT = "modigi:password-instalasi";
+
+let passwordInstalasi = "";
+
+export function simpanPasswordInstalasi(password: string) {
+  passwordInstalasi = password;
+
+  if (adaWindow()) window.dispatchEvent(new Event(PASSWORD_EVENT));
+}
+
+/** Nilai terkini — dibaca langsung (mis. saat mengirim pesan WhatsApp). */
+export function bacaPasswordInstalasi() {
+  return passwordInstalasi;
+}
+
+export function getPasswordSnapshot() {
+  return passwordInstalasi;
+}
+
+/** Server & hidrasi: selalu kosong, supaya HTML awal tidak menebak-nebak. */
+export function getPasswordServerSnapshot() {
+  return "";
+}
+
+export function subscribePassword(callback: () => void) {
+  if (!adaWindow()) return () => {};
+
+  window.addEventListener(PASSWORD_EVENT, callback);
+
+  return () => window.removeEventListener(PASSWORD_EVENT, callback);
+}
+
+/**
+ * Teks pesanan untuk WhatsApp admin **tanpa kredensial**.
+ *
+ * Dipakai tombol "Buka WhatsApp admin lagi" di halaman konfirmasi — gunanya
+ * menyambung kembali chat yang sudah ada, bukan mengirim pesanan baru.
+ *
+ * Pesanan yang lengkap (termasuk akses login WP-Admin) dikirim dari halaman
+ * pembayaran lewat `paymentConfirmMessage`, satu pesan sekaligus setelah pembeli
+ * menekan Konfirmasi Pembayaran.
+ */
+export function orderMessage(order: Order) {
   const baris = order.items.map(
     (item, index) =>
       `${index + 1}. ${item.name} — ${item.qty} lisensi × ${formatRupiah(item.price)} = ${formatRupiah(item.subtotal)}`,
@@ -388,11 +445,8 @@ export function orderMessage(order: Order, wpPassword?: string) {
     `WhatsApp: ${order.customer.whatsapp}`,
     `Domain WordPress: ${order.customer.domain}`,
     `Username WP-Admin: ${order.customer.wpUser}`,
-    // Password TIDAK ikut disimpan di pesanan (`Order`) — hanya ada di pesan ini,
-    // yang dikirim langsung dari formulir saat pembeli menekan "Buat Pesanan".
-    wpPassword ? `Password WP-Admin: ${wpPassword}` : null,
     ``,
-    `${formatCompact(order.items.length)} jenis produk · saya lanjut pilih cara bayar, konfirmasinya saya kirim setelah transfer.`,
+    `${formatCompact(order.items.length)} jenis produk. Saya masih di halaman pembayaran — konfirmasinya saya kirim setelah transfer.`,
   ]
     .filter((teks): teks is string => teks !== null)
     .join("\n");
@@ -487,20 +541,24 @@ export function readPaymentChoice(): PaymentChoice | null {
 }
 
 /**
- * Pesan WhatsApp **kedua**: konfirmasi pembayaran.
+ * Pesan WhatsApp yang dikirim saat pembeli menekan **Konfirmasi Pembayaran** —
+ * satu-satunya pesan yang membawa pesanan lengkap.
  *
- * Dipisah dari `orderMessage` karena dua hal ini memang dua peristiwa berbeda:
- * pesanan dibuat, lalu uangnya dikirim. Admin memakai pesan pertama untuk mulai
- * memasang plugin (di situ ada password WP-Admin) dan pesan kedua untuk
- * mencocokkan uang yang masuk ke mutasinya.
+ * Isinya sengaja digabung dalam satu pesan: nomor pesanan, cara bayar & nominal,
+ * rincian item, **dan** data instalasi termasuk username + password WP-Admin.
+ * Dengan begitu admin tidak perlu menggulir dua chat untuk mulai memasang plugin,
+ * dan pembeli cukup mengisi data instalasi sekali di halaman checkout.
  *
- * Rincian pesanannya ikut diulang di sini supaya admin bisa memverifikasi satu
- * pesan ini saja tanpa perlu menggulir chat.
+ * Kredensialnya datang sebagai argumen karena tidak ikut tersimpan di `Order`
+ * (lihat `simpanPasswordInstalasi`). Kalau memorinya sudah hilang (halaman dimuat
+ * ulang), baris passwordnya disebut apa adanya supaya admin tahu harus menanyakan
+ * lewat chat — bukan diam-diam dikirim tanpa password.
  */
 export function paymentConfirmMessage(
   order: Order,
   pilihan: PaymentChoice,
   metode?: { accountNo?: string; accountName?: string },
+  wpPassword?: string,
 ) {
   const baris = order.items.map(
     (item, index) =>
@@ -522,10 +580,13 @@ export function paymentConfirmMessage(
     ...baris,
     ``,
     `Data instalasi:`,
-    `Domain WordPress: ${order.customer.domain}`,
-    `Username WP-Admin: ${order.customer.wpUser}`,
     `Nama: ${order.customer.name}`,
     `WhatsApp: ${order.customer.whatsapp}`,
+    `Domain WordPress: ${order.customer.domain}`,
+    `Username WP-Admin: ${order.customer.wpUser}`,
+    wpPassword
+      ? `Password WP-Admin: ${wpPassword}`
+      : `Password WP-Admin: belum diisi — mohon ditanyakan lewat chat ini.`,
     ``,
     `Mohon diperiksa, lalu lisensinya diaktifkan. Terima kasih.`,
   ]

@@ -33,6 +33,12 @@ export const heroStats: Stat[] = [
 export const popularSearches = ["Elementor", "RankMath", "WP Rocket", "WooCommerce", "ACF"];
 
 /**
+ * Sapaan kecil di atas judul hero — hanya tampil di layar kecil (mobile shell).
+ * Di desktop baris ini digantikan oleh eyebrow "Plugin Original, Website Lebih Maju".
+ */
+export const heroGreeting = "Selamat datang,";
+
+/**
  * Kartu kode promo yang tampil di mobile (di atas daftar produk).
  * Isinya placeholder — ganti nilainya di sini, kartunya ikut otomatis.
  */

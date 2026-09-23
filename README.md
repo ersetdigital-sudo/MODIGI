@@ -42,8 +42,8 @@ Dibangun dengan **Next.js 16 (App Router)**, **TypeScript**, dan **Tailwind CSS 
 | :---: | :---: | :---: |
 | ![Beranda MODIGI](docs/preview-home.png) | ![Katalog produk](docs/preview-catalog.png) | ![Detail produk](docs/preview-product.png) |
 
-**Mobile** — hero tampil identik dengan desktop (panel gelap + artwork), lalu banner promo geser,
-grid 2 kolom, dan bottom tab bar + tombol keranjang ala aplikasi
+**Mobile** — hero ringkas ala aplikasi (sapaan, judul, kolom pencarian) di latar cream,
+lalu baris kategori geser, grid 2 kolom, dan bottom tab bar + tombol keranjang
 
 <p align="center">
   <img src="docs/preview-home-mobile.png" width="230" alt="Beranda versi mobile" />
@@ -57,7 +57,7 @@ grid 2 kolom, dan bottom tab bar + tombol keranjang ala aplikasi
 
 | Halaman | Deskripsi singkat |
 | --- | --- |
-| `/` | Hero + pencarian, banner promo, baris kategori, produk terlaris, trust bar, CTA |
+| `/` | Hero + pencarian, baris kategori, produk terlaris, trust bar, CTA |
 | `/produk` | Katalog: filter kategori, pencarian, urutan, kartu produk dengan badge diskon |
 | `/produk/[slug]` | Detail: tab informasi, 3 kartu statistik, ulasan, buy box sticky, bar beli mobile |
 
@@ -80,18 +80,20 @@ grid 2 kolom, dan bottom tab bar + tombol keranjang ala aplikasi
 
 **Brand & bantuan**
 
-- Beranda lengkap dengan promo carousel, showcase kategori, dan trust bar
+- Beranda lengkap dengan showcase kategori dan trust bar
 - **`/tentang`** — cerita, keunggulan, cara kerja, prinsip
 - **`/bantuan`** — pusat bantuan 6 section ber-anchor (cara order, aktivasi, update,
   garansi, FAQ, kontak) yang ditautkan dari footer
 
 **Fundamental**
 
-- **Mobile shell ala aplikasi** di layar `< 1024px`: menu panel, banner promo geser,
-  baris kategori, grid 2 kolom, bottom tab bar + tombol keranjang
-- **Satu hero untuk semua layar**: isi hero (eyebrow, judul, pencarian, chip populer,
-  4 statistik) tidak berbeda antara mobile dan desktop — yang berubah hanya
-  skala tipografi dan kerapatan jarak
+- **Mobile shell ala aplikasi** di layar `< 1024px`: header dengan pembatas gelombang,
+  hero ringkas (sapaan + pencarian), baris kategori, grid 2 kolom,
+  bottom tab bar + tombol keranjang
+- **Hero dua tampilan dari satu DOM**: mobile = panel cream ala aplikasi,
+  desktop = panel gelap full-bleed dengan artwork. Isi desktop (eyebrow, chip
+  pencarian populer, 4 statistik) disembunyikan di mobile dengan `lg:*`, bukan
+  di-render ulang — jadi tidak ada duplikasi markup
 - **SEO**: metadata per produk, halaman detail **ter-prerender saat build**,
   breadcrumb, struktur heading berurutan
 - **Aksesibilitas**: indikator fokus di semua elemen interaktif, ikon dekoratif
@@ -292,12 +294,10 @@ Beberapa keputusan yang sengaja diambil, dan alasannya:
 7. **UI diverifikasi dengan pengukuran**, bukan perkiraan: Chrome headless dipakai
    untuk memeriksa overflow horizontal, ukuran target sentuh, ukuran artwork, dan
    panjang baris teks di banyak lebar layar selama pengembangan.
-8. **Hero tidak dipecah per breakpoint.** Dulu mobile memakai hero sendiri (sapaan +
-   banner geser di latar cream). Sekarang satu hero dipakai semua ukuran layar, dan
-   banner promo pindah jadi section tersendiri di bawahnya — supaya tidak ada dua
-   desain hero yang harus dijaga bersamaan.
-9. **Struktur mobile lain tetap ala aplikasi** (banner geser, bottom tab bar, grid
-   2 kolom) untuk layar `< 1024px`, dengan warna tetap identitas MODIGI.
+8. **Hero mobile dipisah, banner promo dihapus.** Mobile memakai hero ringkas
+   (sapaan + judul + pencarian) di latar cream, desktop memakai panel gelap dengan
+   artwork. Banner promo geser pernah dicoba di bawah hero mobile tetapi dihapus:
+   terlalu banyak konten di satu layar kecil.
 
 ---
 

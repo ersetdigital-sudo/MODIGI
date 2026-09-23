@@ -25,6 +25,8 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-transparent bg-ink/95 backdrop-blur lg:border-line-dark">
+      <HeaderWave />
+
       <Container className="flex h-16 items-center gap-4 lg:h-[72px] lg:gap-8">
         <Link href="/" aria-label={siteConfig.name} onClick={closeMenu}>
           <Logo />
@@ -148,5 +150,23 @@ export function SiteHeader() {
         </div>
       )}
     </header>
+  );
+}
+
+/**
+ * Pembatas gelombang di bawah header — hanya di mobile, mengikuti wireframe.
+ * Warnanya sama dengan latar halaman (cream), jadi tepi bawah header terlihat berombak
+ * tanpa perlu elemen pemisah tambahan.
+ */
+function HeaderWave() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 1440 100"
+      preserveAspectRatio="none"
+      className="pointer-events-none absolute inset-x-0 top-full h-4 w-full fill-cream lg:hidden"
+    >
+      <path d="M0,50 C320,150 420,-50 1440,50 L1440,100 L0,100 Z" />
+    </svg>
   );
 }

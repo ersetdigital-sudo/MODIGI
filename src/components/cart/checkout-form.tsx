@@ -33,6 +33,11 @@ const FORM_ID = "form-checkout";
  * Tombol "Buat Pesanan" berada di kartu ringkasan (kanan) tapi men-submit formulir
  * di kartu kiri lewat atribut `form` — jadi di layar lebar orang melihat totalnya
  * persis di sebelah tombolnya.
+ *
+ * Setelah pesanan dibuat, pembeli diarahkan ke `/checkout/pembayaran` (pilih cara
+ * bayar + konfirmasi). WhatsApp tetap dibuka di sini karena **hanya di langkah ini
+ * password WP-Admin ada di memori** — dan admin membutuhkannya untuk memasang
+ * pluginnya. Konfirmasi pembayarannya menyusul sebagai pesan kedua.
  */
 export function CheckoutForm() {
   const { lines, count, total, savings, ready, clear } = useCart();
@@ -71,9 +76,9 @@ export function CheckoutForm() {
     setForm({ ...kosong });
 
     // Buka WhatsApp lebih dulu (masih di dalam gestur klik pengguna, jadi tidak
-    // diblokir), baru pindah ke halaman konfirmasi.
+    // diblokir), baru pindah ke halaman pembayaran.
     window.open(whatsappLink(pesan), "_blank", "noopener,noreferrer");
-    router.push("/checkout/selesai");
+    router.push("/checkout/pembayaran");
 
     // Pesanan juga dicatat ke database supaya bisa dikelola di dashboard admin
     // (status, data instalasi, pembayaran). Sengaja TIDAK ditunggu: pembeli tidak

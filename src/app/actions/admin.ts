@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { buatTokenSesi, opsiCookieSesi, passwordBenar, sudahMasuk } from "@/lib/admin-auth";
-import { FOLDER_PRODUK, hapusGambar, unggahGambar } from "@/lib/cloudinary";
+import { FOLDER_BAYAR, FOLDER_PRODUK, hapusGambar, unggahGambar } from "@/lib/cloudinary";
 import { ambilSupabase } from "@/lib/supabase";
 
 /**
@@ -368,6 +368,142 @@ export async function simpanPembayaranAction(formData: FormData) {
   revalidatePath(`/admin/pesanan/${orderId}`);
   revalidatePath("/admin/pesanan");
   redirect(`/admin/pesanan/${orderId}?pesan=pembayaran`);
+}
+
+// ---------------------------------------------------------------------------
+// Metode pembayaran (rincian yang dilihat pembeli)
+// ---------------------------------------------------------------------------
+
+/** Jenis metode yang diizinkan — nilai lain jatuh ke "bank". */
+const KIND_BAYAR = ["bank", "qris", "ewallet"];
+
+/**
+ * Segarkan halaman pembeli **dan** halaman admin yang menampilkannya.
+ *
+ * Halaman `/checkout/pembayaran` menampilkan nomor rekening yang dilihat pembeli
+ * — kalau admin menambah rekening dan halaman itu masih memakai versi lama,
+ * pembeli bisa mengirim uang ke nomor yang sudah tidak dipakai.
+ */
+function segarkanPembayaran() {
+  revalidatePath("/checkout/pembayaran");
+  revalidatePath("/admin/pembayaran");
+  revalidatePath("/admin");
+}
+
+/**
+ * Simpan metode pembayaran — satu formulir untuk **tambah** dan **edit**.
+ *
+ * Gambar QRIS opsional: diunggah ke Cloudinary seperti foto produk, dan berkas
+ * lamanya dihapus saat diganti supaya akun tidak menumpuk sampah. Ada juga jalur
+ * "hapus gambar" untuk metode yang pindah dari QRIS ke transfer bank.
+ */
+export async function simpanMetodeBayarAction(formData: FormData) {
+  await jaga();
+
+  const supabase = ambilSupabase();
+  const id = teks(formData.get("id"));
+  const label = teks(formData.get("label"));
+
+  if (!label) redirect("/admin/pembayaran?galat=label-kosong");
+
+  const kind = teks(formData.get("kind"), "bank");
+
+  const lama = id
+    ? (
+        await supabase
+          .from("payment_methods")
+          .select("qr_url,qr_public_id")
+          .eq("id", id)
+          .single()
+      ).data
+    : null;
+
+  let qrUrl = lama?.qr_url ?? null;
+  let qrPublicId = lama?.qr_public_id ?? null;
+
+  const berkasQr = berkasDari(formData.get("qr"));
+  const buangQr = teks(formData.get("buang_qr")) === "1";
+
+  try {
+    if (berkasQr) {
+      const hasil = await unggahGambar(berkasQr, { folder: FOLDER_BAYAR });
+      if (lama?.qr_public_id) await hapusGambar(lama.qr_public_id);
+      qrUrl = hasil.url;
+      qrPublicId = hasil.publicId;
+    } else if (buangQr && qrPublicId) {
+      await hapusGambar(qrPublicId);
+      qrUrl = null;
+      qrPublicId = null;
+    }
+  } catch (galat) {
+    const pesan = galat instanceof Error ? galat.message : "unggahan gagal";
+    redirect(`/admin/pembayaran?galat=${encodeURIComponent(pesan)}`);
+  }
+
+  const baris = {
+    kind: KIND_BAYAR.includes(kind) ? kind : "bank",
+    label,
+    account_no: teks(formData.get("account_no")),
+    account_name: teks(formData.get("account_name")),
+    instructions: teks(formData.get("instructions")),
+    qr_url: qrUrl,
+    qr_public_id: qrPublicId,
+    // Checkbox yang tidak dicentang tidak terkirim sama sekali. Form-nya mengirim
+    // nilai "0" dari input tersembunyi di belakang checkbox, jadi "tidak ada" dan
+    // "nonaktif" tidak tertukar.
+    is_active: teks(formData.get("is_active")) === "1",
+    sort_order: angka(formData.get("sort_order")),
+  };
+
+  const { error } = id
+    ? await supabase.from("payment_methods").update(baris).eq("id", id)
+    : await supabase.from("payment_methods").insert(baris);
+
+  if (error) redirect(`/admin/pembayaran?galat=${encodeURIComponent(error.message)}`);
+
+  segarkanPembayaran();
+  redirect(`/admin/pembayaran?pesan=${id ? "diperbarui" : "dibuat"}`);
+}
+
+/** Tombol cepat tampil/sembunyi di daftar metode. */
+export async function ubahStatusMetodeAction(formData: FormData) {
+  await jaga();
+
+  const supabase = ambilSupabase();
+  const id = teks(formData.get("id"));
+  const aktif = teks(formData.get("is_active")) === "1";
+
+  const { error } = await supabase
+    .from("payment_methods")
+    .update({ is_active: aktif })
+    .eq("id", id);
+
+  if (error) redirect(`/admin/pembayaran?galat=${encodeURIComponent(error.message)}`);
+
+  segarkanPembayaran();
+  redirect(`/admin/pembayaran?pesan=${aktif ? "ditampilkan" : "disembunyikan"}`);
+}
+
+export async function hapusMetodeBayarAction(formData: FormData) {
+  await jaga();
+
+  const supabase = ambilSupabase();
+  const id = teks(formData.get("id"));
+
+  const { data } = await supabase
+    .from("payment_methods")
+    .select("qr_public_id")
+    .eq("id", id)
+    .single();
+
+  // Hapus gambar QRIS di Cloudinary dulu; kalau gagal, barisnya tetap dihapus.
+  if (data?.qr_public_id) await hapusGambar(data.qr_public_id);
+
+  const { error } = await supabase.from("payment_methods").delete().eq("id", id);
+  if (error) redirect(`/admin/pembayaran?galat=${encodeURIComponent(error.message)}`);
+
+  segarkanPembayaran();
+  redirect("/admin/pembayaran?pesan=dihapus");
 }
 
 export async function hapusPembayaranAction(formData: FormData) {

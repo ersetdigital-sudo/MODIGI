@@ -19,6 +19,9 @@ const rahasia = process.env.CLOUDINARY_API_SECRET;
 /** Folder default di akun Cloudinary. */
 export const FOLDER_PRODUK = "modigi/produk";
 
+/** Folder gambar QRIS — dipisah supaya mudah ditelusuri di dashboard Cloudinary. */
+export const FOLDER_BAYAR = "modigi/pembayaran";
+
 /** `true` kalau ketiga kredensial Cloudinary sudah diisi. */
 export function cloudinarySiap() {
   return Boolean(awan && kunci && rahasia);

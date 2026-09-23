@@ -116,6 +116,35 @@ create table if not exists payments (
   created_at timestamptz not null default now()
 );
 
+-- --- Metode pembayaran ------------------------------------------------------
+-- Rincian yang DITAMPILKAN ke pembeli di halaman /checkout/pembayaran: nomor
+-- rekening, nama pemilik, gambar QRIS, dan catatan cara bayar. Diatur dari
+-- dashboard (/admin/pembayaran).
+--
+-- Beda dengan tabel `payments` di bawah: `payments` mencatat uang yang BENAR-BENAR
+-- masuk untuk satu pesanan (dipakai laporan), sedangkan `payment_methods` adalah
+-- "papan pengumuman" cara bayar — tidak terikat pesanan mana pun.
+create table if not exists payment_methods (
+  id           uuid primary key default gen_random_uuid(),
+  -- bank | qris | ewallet — menentukan ikon & urutan tampilnya di halaman pembeli.
+  kind         text not null default 'bank',
+  -- Nama yang tampil di kartu, mis. "BCA" atau "QRIS — semua bank".
+  label        text not null,
+  -- Nomor rekening / nomor tujuan e-wallet. Kosong untuk metode QRIS.
+  account_no   text not null default '',
+  -- Nama pemilik rekening — pembeli perlu ini untuk memastikan tidak salah kirim.
+  account_name text not null default '',
+  -- Catatan tambahan, mis. "Khusus BCA, transfer ke rekening yang sama".
+  instructions text not null default '',
+  -- Gambar QRIS hasil unggahan ke Cloudinary (`qr_public_id` untuk menghapusnya).
+  qr_url       text,
+  qr_public_id text,
+  is_active    boolean not null default true,
+  sort_order   integer not null default 0,
+  created_at   timestamptz not null default now(),
+  updated_at   timestamptz not null default now()
+);
+
 -- --- updated_at otomatis ----------------------------------------------------
 create or replace function set_updated_at()
 returns trigger as $$
@@ -133,6 +162,10 @@ drop trigger if exists orders_updated on orders;
 create trigger orders_updated before update on orders
   for each row execute function set_updated_at();
 
+drop trigger if exists payment_methods_updated on payment_methods;
+create trigger payment_methods_updated before update on payment_methods
+  for each row execute function set_updated_at();
+
 -- --- Indeks -----------------------------------------------------------------
 create index if not exists products_status_idx  on products (status);
 create index if not exists products_kategori_idx on products (category_slug);
@@ -140,10 +173,11 @@ create index if not exists orders_status_idx    on orders (status);
 create index if not exists orders_created_idx   on orders (created_at desc);
 create index if not exists order_items_order_idx on order_items (order_id);
 create index if not exists payments_order_idx   on payments (order_id);
+create index if not exists payment_methods_tampil_idx on payment_methods (is_active, sort_order);
 
 -- --- RLS: aktif tanpa policy = hanya service_role yang bisa akses -----------
 alter table categories  enable row level security;
 alter table products    enable row level security;
 alter table orders      enable row level security;
-alter table order_items enable row level security;
-alter table payments    enable row level security;
+alter table order_items enable row level security;alter table payments      enable row level security;
+alter table payment_methods enable row level security;

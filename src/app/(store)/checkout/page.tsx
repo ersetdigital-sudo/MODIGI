@@ -7,7 +7,7 @@ import { checkoutCopy } from "@/data/store";
 export const metadata: Metadata = {
   title: "Checkout",
   description:
-    "Isi data pesanan, lalu kirim ringkasannya ke WhatsApp admin. Rincian pembayaran dibalas di chat yang sama.",
+    "Isi data instalasi, lalu pilih cara bayar — transfer bank, QRIS, atau e-wallet — dan kirim konfirmasi pembayarannya lewat WhatsApp.",
   robots: { index: false, follow: true },
 };
 

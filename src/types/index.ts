@@ -179,6 +179,50 @@ export type CheckoutData = Customer & {
   wpPassword: string;
 };
 
+/** Jenis cara bayar — menentukan ikon, urutan, dan cara tampilnya. */
+export type MetodeBayarKind = "bank" | "qris" | "ewallet";
+
+/**
+ * Rincian cara bayar yang ditampilkan ke pembeli di `/checkout/pembayaran`.
+ *
+ * Isinya datang dari tabel `payment_methods` (diatur di `/admin/pembayaran`),
+ * bukan dari kode — jadi admin bisa menambah rekening atau mengganti gambar QRIS
+ * kapan saja tanpa perlu deploy ulang.
+ *
+ * `qrUrl` hanya terisi untuk metode QRIS. Metode bank/e-wallet memakai
+ * `accountNo` + `accountName`.
+ */
+export type MetodeBayar = {
+  id: string;
+  kind: MetodeBayarKind;
+  /** Nama yang tampil di kartu, mis. "BCA" atau "QRIS — semua bank". */
+  label: string;
+  /** Nomor rekening / nomor tujuan e-wallet. Kosong untuk QRIS. */
+  accountNo: string;
+  /** Pemilik rekening — pembeli perlu ini untuk memastikan tidak salah kirim. */
+  accountName: string;
+  instructions: string;
+  qrUrl: string | null;
+};
+
+/**
+ * Pilihan pembayaran pembeli, disimpan di `localStorage`.
+ *
+ * Dipakai halaman konfirmasi (`/checkout/selesai`) untuk menampilkan "Anda memilih
+ * BCA" dan tombol mengirim ulang konfirmasi — bukan sebagai bukti pembayaran
+ * (buktinya tetap pesan WhatsApp + catatan admin di dashboard).
+ */
+export type PaymentChoice = {
+  orderNo: string;
+  methodId: string;
+  methodLabel: string;
+  methodKind: MetodeBayarKind;
+  /** Nama pengirim / keterangan transfer yang diisi pembeli (boleh kosong). */
+  reference: string;
+  /** Kapan pembeli menekan tombol konfirmasi (ISO string). */
+  at: string;
+};
+
 /**
  * Pesanan yang tersimpan setelah checkout.
  *

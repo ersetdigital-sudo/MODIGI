@@ -1,6 +1,13 @@
 "use client";
 
-import { Boxes, ExternalLink, FolderTree, LayoutDashboard, ShoppingCart } from "lucide-react";
+import {
+  Boxes,
+  ExternalLink,
+  FolderTree,
+  LayoutDashboard,
+  ShoppingCart,
+  Wallet,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ComponentType } from "react";
@@ -34,6 +41,7 @@ export function AdminNav({ lencanaPesanan }: { lencanaPesanan: number }) {
     { label: "Produk", href: "/admin/produk", icon: Boxes },
     { label: "Kategori", href: "/admin/kategori", icon: FolderTree },
     { label: "Pesanan", href: "/admin/pesanan", icon: ShoppingCart, lencana: lencanaPesanan },
+    { label: "Pembayaran", href: "/admin/pembayaran", icon: Wallet },
   ];
 
   const aktif = (href: string) =>

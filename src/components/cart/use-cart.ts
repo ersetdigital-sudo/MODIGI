@@ -13,6 +13,8 @@ import {
   getKatalogSnapshot,
   getOrderServerSnapshot,
   getOrderSnapshot,
+  getPaymentServerSnapshot,
+  getPaymentSnapshot,
   normalizeQty,
   readCart,
   setCartDrawer,
@@ -20,6 +22,7 @@ import {
   subscribeCartDrawer,
   subscribeKatalog,
   subscribeOrder,
+  subscribePayment,
   summarize,
   toLines,
   writeCart,
@@ -124,4 +127,22 @@ export function useLastOrder() {
   const ready = useSyncExternalStore(subscribeNihil, trueDiKlien, falseDiServer);
 
   return { order, ready };
+}
+
+/**
+ * Cara bayar yang dipilih pembeli di perangkat ini.
+ *
+ * Dipakai dua halaman: `/checkout/pembayaran` (supaya pilihan sebelumnya tidak
+ * hilang saat halaman dimuat ulang) dan `/checkout/selesai` (supaya status
+ * pembayarannya bisa ditampilkan apa adanya).
+ */
+export function usePaymentChoice() {
+  const pilihan = useSyncExternalStore(
+    subscribePayment,
+    getPaymentSnapshot,
+    getPaymentServerSnapshot,
+  );
+  const ready = useSyncExternalStore(subscribeNihil, trueDiKlien, falseDiServer);
+
+  return { pilihan, ready };
 }

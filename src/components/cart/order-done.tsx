@@ -1,9 +1,9 @@
 "use client";
 
-import { ArrowRight, CheckCircle2, Clock, FileText, Smartphone } from "lucide-react";
+import { ArrowRight, CheckCircle2, Clock, CreditCard, FileText, Smartphone } from "lucide-react";
 import Link from "next/link";
 
-import { useLastOrder } from "@/components/cart/use-cart";
+import { useLastOrder, usePaymentChoice } from "@/components/cart/use-cart";
 import { WhatsappIcon } from "@/components/store/whatsapp-icon";
 import { orderDoneCopy } from "@/data/store";
 import { orderMessage } from "@/lib/cart";
@@ -18,9 +18,15 @@ const ikonLangkah = [FileText, Smartphone, CheckCircle2];
  * Membaca pesanan terakhir dari `localStorage` — sengaja tidak lewat URL, supaya
  * nomor pesanan & data pembeli tidak ikut tercatat di riwayat browser ataupun
  * terkirim sebagai referrer kalau link-nya dibagikan.
+ *
+ * Dua keadaan yang mungkin: pembeli sudah menekan **Konfirmasi Pembayaran**
+ * (pilihannya tersimpan di browser → metode & waktunya ditampilkan), atau belum
+ * (ditawari tombol menuju halaman pembayaran). Yang menentukan hanya "apakah
+ * pembeli bilang sudah bayar" — verifikasi tetap di admin, bukan di halaman ini.
  */
 export function OrderDone() {
   const { order, ready } = useLastOrder();
+  const { pilihan } = usePaymentChoice();
 
   if (!ready) {
     return (
@@ -59,6 +65,9 @@ export function OrderDone() {
   });
 
   const hemat = order.compareAtTotal - order.total;
+
+  // Pilihan pembayaran hanya berlaku untuk pesanan yang sedang ditampilkan.
+  const bayar = pilihan && pilihan.orderNo === order.orderNo ? pilihan : null;
 
   return (
     <div className="mt-8 grid items-start gap-8 lg:grid-cols-[1.35fr_1fr]">
@@ -116,6 +125,53 @@ export function OrderDone() {
               Hemat {formatRupiah(hemat)} dari harga resmi
             </p>
           )}
+        </section>
+
+        <section className="card p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="flex items-center gap-2 text-[15px] font-extrabold">
+              <CreditCard className="size-4 text-[var(--accent)]" aria-hidden="true" />
+              {orderDoneCopy.payment.title}
+            </h2>
+
+            <span
+              className={
+                bayar
+                  ? "inline-flex items-center gap-1.5 rounded-full bg-[var(--accent-soft)] px-3 py-1.5 text-[12px] font-bold text-[var(--accent)]"
+                  : "inline-flex items-center gap-1.5 rounded-full bg-[#f1eee7] px-3 py-1.5 text-[12px] font-bold text-[var(--muted)]"
+              }
+            >
+              {bayar ? orderDoneCopy.payment.paidBadge : orderDoneCopy.payment.unpaidBadge}
+            </span>
+          </div>
+
+          <p className="mt-3 text-[14px] leading-relaxed text-[var(--muted)]">
+            {bayar ? orderDoneCopy.payment.paidNote : orderDoneCopy.payment.unpaidNote}
+          </p>
+
+          {bayar ? (
+            <dl className="mt-4 grid gap-x-8 gap-y-3 text-[14px] sm:grid-cols-2">
+              <Baris label={orderDoneCopy.payment.methodLabel} nilai={bayar.methodLabel} />
+              {bayar.reference ? (
+                <Baris label={orderDoneCopy.payment.referenceLabel} nilai={bayar.reference} />
+              ) : null}
+              <Baris
+                label={orderDoneCopy.payment.sentAtLabel}
+                nilai={new Date(bayar.at).toLocaleString("id-ID", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              />
+            </dl>
+          ) : null}
+
+          <Link href="/checkout/pembayaran" className="btn btn-ghost mt-4">
+            {bayar ? orderDoneCopy.payment.payAgainLabel : orderDoneCopy.payment.payLabel}
+            <ArrowRight className="size-[18px]" aria-hidden="true" />
+          </Link>
         </section>
 
         <section className="card p-6">

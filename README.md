@@ -1,8 +1,9 @@
 # MODIGI — Digital Products Storefront
 
 Storefront produk digital (lisensi plugin & tema WordPress) — katalog, halaman detail
-produk dengan ulasan pelanggan, alur checkout via WhatsApp, dan **dashboard admin**
-untuk mengelola produk, kategori, pesanan, serta pembayaran.
+produk dengan ulasan pelanggan, alur checkout → pembayaran (transfer bank / QRIS) →
+konfirmasi via WhatsApp, dan **dashboard admin** untuk mengelola produk, kategori,
+cara bayar, pesanan, serta pembayaran masuk.
 
 Dibangun dengan **Next.js 16 (App Router)**, **TypeScript**, **Tailwind CSS v4**,
 serta **Supabase** (database) dan **Cloudinary** (gambar produk).
@@ -14,7 +15,9 @@ serta **Supabase** (database) dan **Cloudinary** (gambar produk).
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 > **Catatan:** ini proyek portofolio. Data produk, harga, ulasan, dan nomor WhatsApp
-> di repo ini adalah **contoh** — bukan toko yang sedang berjalan. Logo produk pihak
+> di repo ini adalah **contoh** — bukan toko yang sedang berjalan. Daftar cara bayar
+> (nomor rekening/QRIS) juga sengaja **dibiarkan kosong**: diisi sendiri dari
+> `/admin/pembayaran`, bukan ditanam di kode. Logo produk pihak
 > ketiga (Elementor, WP Rocket, Wordfence, Rank Math, Essential Addons) tetap milik
 > pemiliknya masing-masing dan dipakai apa adanya.
 
@@ -71,11 +74,15 @@ bernomor supaya bagian tertentu gampang dirujuk
 | :---: | :---: |
 | ![Kategori produk MODIGI](docs/preview-kategori.png) | ![Testimoni pembeli MODIGI](docs/preview-testimoni.png) |
 
-**Keranjang & Checkout** — dari "suka produknya" sampai pesanan terkirim, tanpa akun
+**Keranjang & Checkout** — dari "suka produknya" sampai konfirmasi pembayaran, tanpa akun
 
 | Drawer keranjang | Halaman keranjang | Checkout |
 | :---: | :---: | :---: |
 | ![Drawer keranjang MODIGI](docs/preview-drawer.png) | ![Halaman keranjang MODIGI](docs/preview-keranjang.png) | ![Checkout MODIGI](docs/preview-checkout.png) |
+
+| Pembayaran (transfer bank & QRIS) |
+| :---: |
+| ![Halaman pembayaran MODIGI dengan pilihan transfer bank dan QRIS](docs/preview-pembayaran.png) |
 
 **Dashboard admin** — produk, kategori, pesanan, dan pembayaran; semua perubahan
 langsung tayang di situs
@@ -96,14 +103,16 @@ langsung tayang di situs
 | `/kategori` | Semua kategori dengan jumlah produk & harga mulai, plus daftar produknya |
 | `/testimoni` | Ulasan dari semua produk, dikelompokkan per produk |
 | `/keranjang` | Daftar item + ubah jumlah + ringkasan (hemat, total) |
-| `/checkout` | Formulir data pembeli + ringkasan + persetujuan lisensi |
-| `/checkout/selesai` | Nomor pesanan, rincian, langkah pembayaran |
+| `/checkout` | Formulir data instalasi + ringkasan + persetujuan lisensi |
+| `/checkout/pembayaran` | Pilih cara bayar (transfer bank / QRIS / e-wallet) + konfirmasi ke WhatsApp |
+| `/checkout/selesai` | Nomor pesanan, status pembayaran, rincian, langkah berikutnya |
 | `/kebijakan/*` | Empat dokumen: Syarat & Ketentuan, Privasi, Refund, Lisensi |
 | `/admin` | **Dashboard**: ringkasan angka + pesanan terbaru (tidak diindeks) |
 | `/admin/produk` | Daftar produk: ubah status aktif/draft, edit, hapus |
 | `/admin/produk/baru` · `/admin/produk/[id]` | Formulir produk: identitas, harga, gambar (Cloudinary), box produk, isi halaman |
 | `/admin/kategori` | Tambah/ubah/hapus kategori + urutannya |
 | `/admin/pesanan` · `/admin/pesanan/[id]` | Pesanan masuk: data instalasi, status, pencatatan pembayaran |
+| `/admin/pembayaran` | Nomor rekening, QRIS (unggah gambar), e-wallet + urutannya |
 | `/admin/masuk` | Gerbang admin (satu password, sesi cookie httpOnly 12 jam) |
 
 ---
@@ -125,14 +134,23 @@ langsung tayang di situs
   lihat total, lalu langsung ke checkout tanpa meninggalkan halaman yang dibaca
 - **Keranjang** — isinya disimpan di `localStorage` (hanya slug + jumlah), badge
   jumlah di header & tab bar mobile ikut berubah tanpa reload
-- **Checkout** — formulir data pembeli (nama, WhatsApp, email, domain, catatan),
-  ringkasan pesanan yang menempel saat scroll, dan persetujuan lisensi
-- **Konfirmasi pesanan** — nomor pesanan, rincian item, data pembeli, dan langkah
-  berikutnya. Isinya dibaca dari `localStorage`, **bukan dari URL**, jadi nomor
-  pesanan & data pembeli tidak tertinggal di riwayat browser
-- **Alur order WhatsApp**: checkout menghasilkan satu pesan pesanan yang lengkap
-  (item, total, nomor pesanan, domain) dan membukanya di chat admin — jadi admin
-  tidak perlu menanyakan ulang; tombol "Tanya Dulu" juga tetap tersedia
+- **Checkout** — formulir **Data Instalasi** (nama, WhatsApp, domain, username &
+  password WP-Admin), ringkasan pesanan yang menempel saat scroll, dan persetujuan
+  lisensi. Password WP-Admin **tidak pernah disimpan** — hanya ikut pesan WhatsApp
+- **Pembayaran** — halaman `/checkout/pembayaran` menampilkan nomor rekening, nama
+  pemilik, dan gambar QRIS yang diatur admin, lengkap dengan tombol **salin** untuk
+  nomor rekening, nominal, dan nomor pesanan. Pembeli memilih satu metode, menekan
+  **Konfirmasi Pembayaran**, dan seluruh datanya terkirim ke WhatsApp admin — tanpa
+  mengetik ulang apa pun
+- **Alur order dua pesan WhatsApp**: (1) saat pesanan dibuat, admin menerima data
+  instalasi **termasuk password WP-Admin** — jadi proses pemasangan bisa jalan
+  sementara pembeli membayar; (2) saat pembeli menekan Konfirmasi Pembayaran, admin
+  menerima pesan kedua berisi metode, nominal, keterangan pengirim, dan rincian
+  pesanannya. Tombol "Tanya Dulu" juga tetap tersedia
+- **Konfirmasi pesanan** — nomor pesanan, status pembayaran (sudah/belum
+  dikonfirmasi + metodenya), rincian item, dan langkah berikutnya. Isinya dibaca
+  dari `localStorage`, **bukan dari URL**, jadi nomor pesanan & data pembeli tidak
+  tertinggal di riwayat browser
 
 **Dashboard admin** (`/admin`, tidak diindeks mesin pencari)
 
@@ -147,9 +165,15 @@ langsung tayang di situs
 - **Pesanan** — setiap checkout tercatat otomatis: data instalasi (nama, WhatsApp,
   domain, username WP-Admin), item, total, dan status bertahap
   (`baru → dikonfirmasi → dibayar → selesai`). Ada tombol langsung ke WhatsApp pembeli.
-- **Pembayaran** — catat transfer/QRIS/e-wallet per pesanan (boleh bertahap),
+- **Cara bayar** — atur nomor rekening bank, QRIS (unggah gambarnya ke Cloudinary),
+  dan e-wallet: mana yang tampil, urutannya, dan catatan untuk pembeli. Perubahan
+  langsung terlihat di halaman pembayaran.
+- **Pembayaran masuk** — catat transfer/QRIS/e-wallet per pesanan (boleh bertahap),
   lengkap dengan referensi & waktu lunas. Status pesanan naik sendiri ke **dibayar**
   begitu ada pembayaran lunas.
+- **Dua hal yang sengaja dipisah**: menu *Cara bayar* mengatur rincian yang
+  **ditampilkan** ke semua pembeli, menu *Pesanan* mencatat uang yang **benar-benar
+  masuk** untuk satu pesanan.
 - **Ubah produk → situs ikut berubah** tanpa deploy: server action admin memanggil
   `revalidatePath`, jadi halaman beranda/katalog/detail disegarkan saat itu juga.
 - **Satu password, satu pengelola.** Sesi disimpan di cookie httpOnly bertanda tangan
@@ -194,6 +218,7 @@ Halaman-halaman dashboard tidak diindeks mesin pencari dan tidak memakai chrome 
 /admin/kategori     tambah, ubah, hapus, dan urutkan kategori
 /admin/pesanan      daftar pesanan + detailnya
   └─ /[id]          data instalasi, status pesanan, catat pembayaran
+/admin/pembayaran   nomor rekening, QRIS, e-wallet untuk halaman pembeli
 ```
 
 **Tabel yang dipakai** (`supabase/schema.sql`)
@@ -205,6 +230,7 @@ Halaman-halaman dashboard tidak diindeks mesin pencari dan tidak memakai chrome 
 | `orders` | Pesanan: nomor, data pembeli, domain, username WP-Admin, total, status |
 | `order_items` | Baris item per pesanan (nama, harga, jumlah, subtotal) |
 | `payments` | Pembayaran per pesanan: metode, nominal, status, referensi, waktu lunas |
+| `payment_methods` | Cara bayar yang **ditampilkan** ke pembeli: jenis, nomor & atas nama, QRIS (`qr_url`), aktif/nonaktif, urutan |
 
 Semua tabel mengaktifkan **Row Level Security tanpa policy**: hanya `service_role`
 (dipakai server Next.js) yang bisa membaca/menulis. Kalaupun anon key beredar, isi
@@ -220,7 +246,7 @@ toko — termasuk data pesanan pembeli — tetap tidak terbaca dari browser.
 | UI | React 19.2, Tailwind CSS v4, Lucide Icons |
 | Bahasa | TypeScript 5 |
 | Utilitas | `clsx` + `tailwind-merge` (helper `cn`) |
-| Data | **Supabase (Postgres)** — `products`, `categories`, `orders`, `order_items`, `payments` (RLS aktif, hanya `service_role` yang bisa akses) |
+| Data | **Supabase (Postgres)** — `products`, `categories`, `orders`, `order_items`, `payments`, `payment_methods` (RLS aktif, hanya `service_role` yang bisa akses) |
 | Gambar | **Cloudinary** — unggahan dari dashboard admin, tanpa SDK (signature SHA-1 sendiri) |
 | Autentikasi | Password admin + cookie httpOnly bertanda tangan HMAC (`lib/admin-auth.ts`) |
 | Seed & cadangan | `src/data/products.ts` & `data/categories.ts` — dipakai untuk mengisi database dan sebagai fallback kalau database tidak bisa dihubungi |
@@ -301,7 +327,8 @@ src/
 │     │  └─ [slug]/page.tsx   # detail produk (ISR 5 menit, disegarkan dari admin)
 │     ├─ keranjang/page.tsx   # keranjang (isi dari localStorage)
 │     ├─ checkout/
-│     │  ├─ page.tsx          # formulir data pembeli + ringkasan
+│     │  ├─ page.tsx          # formulir data instalasi + ringkasan
+│     │  ├─ pembayaran/       # pilih cara bayar + konfirmasi ke WhatsApp
 │     │  └─ selesai/page.tsx  # konfirmasi pesanan
 │     └─ bantuan/page.tsx     # pusat bantuan
 │
@@ -312,14 +339,15 @@ src/
 │  │     ├─ page.tsx          # dasbor: statistik + pesanan terbaru
 │  │     ├─ produk/           # daftar, tambah, edit (+ hapus) produk
 │  │     ├─ kategori/         # kelola kategori & urutannya
-│  │     └─ pesanan/          # daftar pesanan, detail, catat pembayaran
+│  │     ├─ pesanan/          # daftar pesanan, detail, catat pembayaran
+│  │     └─ pembayaran/       # nomor rekening, QRIS, e-wallet
 │  │
 │  └─ actions/                # server action: admin.ts (tulis) & pesanan.ts (checkout)
 │
 ├─ components/
 │  ├─ layout/                 # header, footer, tab bar mobile
 │  ├─ home/                   # section khusus beranda
-│  ├─ cart/                   # keranjang: hook, tombol, daftar, form checkout
+│  ├─ cart/                   # keranjang + pembayaran: hook, tombol, drawer, form
 │  ├─ store/                  # komponen katalog & detail produk
 │  ├─ admin/                  # dashboard: kerangka, formulir produk, tabel, tombol
 │  ├─ kebijakan/              # kerangka dokumen kebijakan
@@ -370,7 +398,8 @@ sedangkan produk & kategori diubah dari dashboard admin.
 | `/bantuan` | Static | Pusat bantuan (6 section ber-anchor) |
 | `/kategori` | Static + revalidate | Kategori + produk per kategori, dihitung dari database |
 | `/keranjang` | Static + klien | Isi keranjang dari `localStorage` (tidak diindeks) |
-| `/checkout` | Static + klien | Formulir data pembeli + ringkasan pesanan (tidak diindeks) |
+| `/checkout` | Static + klien | Formulir data instalasi + ringkasan pesanan (tidak diindeks) |
+| `/checkout/pembayaran` | Static + revalidate | Cara bayar dari database, disegarkan saat admin mengubahnya (tidak diindeks) |
 | `/checkout/selesai` | Static + klien | Konfirmasi pesanan terakhir (tidak diindeks) |
 | `/testimoni` | Static | Ulasan lintas produk dari satu sumber data yang sama |
 | `/kebijakan/syarat-ketentuan` | Static | Syarat & Ketentuan — 9 bagian |
@@ -390,13 +419,14 @@ sedangkan produk & kategori diubah dari dashboard admin.
 | Menu header & link footer | `src/data/navigation.ts` |
 | **Produk** (harga, foto, isi halaman) | **`/admin/produk`** — dashboard, tanpa deploy |
 | **Kategori** | **`/admin/kategori`** |
-| **Pesanan & pembayaran** | **`/admin/pesanan`** |
+| **Pesanan & pembayaran masuk** | **`/admin/pesanan`** |
+| **Nomor rekening & QRIS** | **`/admin/pembayaran`** — dashboard, tanpa deploy |
 | Produk awal (seed) / kalau database mati | `src/data/products.ts` |
 | Kategori awal (seed) | `src/data/categories.ts` |
 | **Ulasan pembeli** | `src/data/reviews.ts` (produk tanpa data ulasan otomatis tidak menampilkan section) |
 | **Nomor WhatsApp toko** | `src/data/store.ts` → `whatsappNumber` |
 | Teks katalog, buy box, poin trust | `src/data/store.ts` |
-| Teks keranjang / checkout / konfirmasi | `src/data/store.ts` → `cartCopy`, `checkoutCopy`, `orderDoneCopy` |
+| Teks keranjang / checkout / pembayaran / konfirmasi | `src/data/store.ts` → `cartCopy`, `checkoutCopy`, `paymentCopy`, `orderDoneCopy` |
 | Copy halaman Tentang / Bantuan | `src/data/about.ts`, `src/data/support.ts` |
 | Copy halaman Kategori / Testimoni | `src/data/kategori.ts`, `src/data/testimoni.ts` |
 | **Teks 4 dokumen kebijakan** | `src/data/policies.ts` (satu dokumen = satu objek) |
@@ -517,9 +547,20 @@ Beberapa keputusan yang sengaja diambil, dan alasannya:
    **juga** dicatat ke database lewat server action `buatPesananAction`. Pencatatan
    ke database sengaja tidak ditunggu: WhatsApp adalah jalur utama pesanannya, jadi
    kalau penyimpanan di server bermasalah, pembeli tetap bisa menyelesaikan order.
-   Halaman konfirmasi tetap tidak menampilkan nomor rekening karangan — rincian
-   pembayaran dikirim admin lewat chat.
-11. **Password WP-Admin tidak disimpan di mana pun.** Formulir checkout meminta
+   Kalau database tidak bisa dihubungi, hal yang sama juga berlaku untuk rincian
+   cara bayar: halaman pembayaran menyebut apa adanya bahwa rekeningnya dikirim
+   admin lewat chat, bukan menampilkan nomor contoh yang bisa disalahgunakan.
+11. **Dua pesan WhatsApp, dan itu disengaja.** Pesan pertama dikirim saat tombol
+   "Buat Pesanan" ditekan — isinya data instalasi, **termasuk password WP-Admin**,
+   yang hanya ada di memori form saat itu. Pesan kedua dikirim dari halaman
+   pembayaran saat pembeli menekan "Konfirmasi Pembayaran" — isinya metode bayar,
+   nominal, keterangan pengirim, dan rincian pesanan. Alternatifnya (satu pesan di
+   akhir) berarti password harus ditahan di browser sampai pembeli selesai bayar —
+   kalau halamannya di-refresh, kredensialnya hilang dan admin harus menanyakannya
+   lewat chat. Rincian cara bayar sendiri **tidak diketik ulang** oleh pembeli:
+   isinya datang dari tabel `payment_methods` yang diatur admin, jadi halaman
+   pembeli selalu memakai nomor rekening terbaru tanpa deploy ulang.
+12. **Password WP-Admin tidak disimpan di mana pun.** Formulir checkout meminta
    kredensial WP-Admin (dipakai admin untuk memasang pluginnya), tapi
    `createOrder()` sengaja tidak memasukkannya ke objek pesanan, dan tabel `orders`
    memang **tidak punya kolomnya** (lihat `supabase/schema.sql`). Password hanya ada
@@ -570,9 +611,11 @@ Semuanya sudah ditandai `← PERLU DIPUTUSKAN` di `src/data/policies.ts`:
 
 | Hal | Nilai sekarang | Ada di |
 | --- | --- | --- |
+| **Nomor rekening & QRIS** | Daftar metode di dashboard admin (`/admin/pembayaran`); database **dibuat kosong**, jadi wajib diisi sebelum dipakai jualan | `payment_methods` |
 | **Kredensial WP-Admin** | Diminta di checkout lalu dikirim lewat WhatsApp (tidak disimpan) | `data/store.ts` → `checkoutCopy.passwordNote` |
 | **Password dashboard admin** | `ADMIN_PASSWORD` di environment variable — ganti dari nilai contoh | Vercel & `.env.local` |
 | **Data pesanan tersimpan di server** | Ya: nama, WhatsApp, domain, username WP-Admin, item, pembayaran | Supabase (`orders`, `order_items`, `payments`) |
+| **Cara bayar yang tampil ke pembeli** | Nomor rekening, nama pemilik, gambar QRIS — diatur admin, bukan ditulis di kode | Supabase (`payment_methods`) + Cloudinary |
 | **Pihak yang menyimpan data** | Supabase (database), Cloudinary (foto produk), WhatsApp (chat) | Kebijakan Privasi → "Siapa lagi yang bisa melihat data Anda" |
 | Identitas badan hukum & alamat | **belum dicantumkan** — hanya brand MODIGI | seluruh dokumen |
 | Lama penyimpanan data pesanan | 12 bulan setelah masa aktif | Kebijakan Privasi → “Berapa lama data disimpan” |
@@ -591,13 +634,17 @@ Nomor WhatsApp, email (`halo@modigi.id`), jam operasional, dan seluruh angka kla
 
 - [x] **Keranjang** — `localStorage` + badge jumlah hidup di header & FAB mobile
 - [x] **Halaman `/keranjang`** — ubah jumlah, hapus item, ringkasan, hemat
-- [x] **Halaman `/checkout`** — data pembeli + domain, ringkasan, persetujuan lisensi
-- [x] **Konfirmasi pesanan** — nomor pesanan, rincian, langkah pembayaran
+- [x] **Halaman `/checkout`** — data instalasi + domain, ringkasan, persetujuan lisensi
+- [x] **Halaman `/checkout/pembayaran`** — transfer bank / QRIS / e-wallet dari
+      dashboard, tombol salin, dan konfirmasi pembayaran yang mengirim data ke WhatsApp
+- [x] **Konfirmasi pesanan** — nomor pesanan, status pembayaran, rincian, langkah berikutnya
 - [x] **Halaman `/kategori` & `/testimoni`** — semua tautan header & footer hidup
 - [x] **Dashboard admin** — produk, kategori, pesanan, pembayaran, unggah Cloudinary
 - [x] **Database** — katalog & pesanan pindah dari data statis ke Supabase
 - [ ] **Payment gateway** — QRIS/transfer otomatis, bukan konfirmasi manual di chat
-- [ ] **Bukti transfer dari pembeli** — sampai sekarang admin yang mencatat pembayaran
+- [ ] **Bukti transfer dari pembeli** — pembeli sudah mengonfirmasi lewat WhatsApp,
+      tapi catatan pembayarannya masih diisi admin di dashboard (belum otomatis masuk
+      sebagai pembayaran berstatus *pending* di pesanannya)
 - [ ] **Akun pelanggan** — riwayat lisensi & perpanjangan (tombol "Masuk" masih
       mengarah ke `/masuk` yang belum ada)
 - [ ] **Beberapa pengguna admin** — sekarang satu password; langkah berikutnya

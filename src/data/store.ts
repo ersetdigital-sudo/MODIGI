@@ -1,7 +1,7 @@
 import { BadgeCheck, CreditCard, MessageCircle, ShieldCheck, ShoppingCart, Zap } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-import type { TrustPoint } from "@/types";
+import type { MetodeBayarKind, TrustPoint } from "@/types";
 
 /**
  * Nomor WhatsApp toko — format `62…`, tanpa `+` dan tanpa spasi.
@@ -72,24 +72,24 @@ export const secondOpinion = {
 export const orderSteps: { icon: LucideIcon; title: string; description: string }[] = [
   {
     icon: ShoppingCart,
-    title: "Klik Beli Sekarang",
-    description: "Produk masuk keranjang, lalu Anda mengisi data pesanan.",
+    title: "Pilih produk & isi data",
+    description: "Produk masuk keranjang, lalu Anda mengisi domain dan akses WP-Admin.",
   },
   {
     icon: CreditCard,
-    title: "Bayar & kirim domain",
-    description: "Transfer bank atau QRIS, lalu sebutkan nama domain.",
+    title: "Bayar di halaman pembayaran",
+    description: "Pilih transfer bank, QRIS, atau e-wallet — rinciannya tampil langsung.",
   },
   {
     icon: BadgeCheck,
     title: "Lisensi aktif",
-    description: "Plugin langsung bisa dipakai dan di-update.",
+    description: "Konfirmasi terverifikasi, plugin dipasang dan bisa langsung dipakai.",
   },
 ];
 
 /** Catatan kecil soal pembayaran di buy box. */
 export const paymentNote =
-  "Transfer bank, QRIS, atau e-wallet. Konfirmasi lewat WhatsApp, lisensi dikirim ke chat yang sama.";
+  "Transfer bank, QRIS, atau e-wallet. Pilih metodenya di halaman pembayaran, lalu kirim konfirmasi lewat WhatsApp.";
 
 /** Keterangan harga di bawah nominal di buy box. */
 export const priceNote = "Sekali bayar untuk 1 domain. Aktif 1 tahun, termasuk update.";
@@ -129,7 +129,7 @@ export const cartCopy = {
   },
   checkoutLabel: "Lanjut ke Checkout",
   continueLabel: "Lanjut belanja",
-  note: "Langkah berikutnya: isi data pesanan, lalu kirim ringkasannya ke WhatsApp admin.",
+  note: "Langkah berikutnya: isi data pesanan, pilih cara bayar, lalu kirim konfirmasinya lewat WhatsApp.",
 
   /** Teks drawer keranjang — panel yang muncul dari kanan saat produk ditambahkan. */
   drawer: {
@@ -173,7 +173,8 @@ export const checkoutCopy = {
   passwordNote:
     "Password hanya dikirim ke WhatsApp admin untuk instalasi dan tidak disimpan di halaman ini. Sebaiknya ganti setelah plugin terpasang.",
   submitLabel: "Buat Pesanan",
-  submitNote: "Lanjut ke halaman pembayaran setelah pesanan dibuat.",
+  submitNote:
+    "WhatsApp admin terbuka berisi data instalasi Anda, lalu Anda memilih cara bayar di halaman berikutnya.",
   policyNote: {
     lead: "Dengan membuat pesanan, Anda setuju dengan",
     links: [
@@ -195,11 +196,93 @@ export const checkoutCopy = {
   itemSuffix: "produk",
 };
 
+/**
+ * Label jenis cara bayar — dipakai halaman pembeli **dan** dashboard admin supaya
+ * penyebutannya konsisten ("Transfer bank", bukan "transfer" di satu tempat dan
+ * "Bank Transfer" di tempat lain).
+ */
+export const metodeKindLabel: Record<MetodeBayarKind, string> = {
+  bank: "Transfer bank",
+  qris: "QRIS",
+  ewallet: "E-wallet",
+};
+
+/**
+ * Teks halaman pembayaran (/checkout/pembayaran).
+ *
+ * Halaman ini sengaja dibuat *satu halaman penuh* (bukan modal atau lompatan ke
+ * WhatsApp): pembeli perlu membaca nomor rekening, mencocokkan nama pemiliknya,
+ * dan menyalin nominalnya dengan tenang.
+ */
+export const paymentCopy = {
+  breadcrumb: "Pembayaran",
+  breadcrumbParent: { label: "Checkout", href: "/checkout" },
+  title: "Selesaikan pembayaran",
+  description:
+    "Pilih salah satu cara bayar di bawah, kirim nominalnya persis sesuai total, lalu tekan Konfirmasi Pembayaran supaya pesanan Anda langsung diproses.",
+
+  /** Tiga langkah pesanan — penanda posisi pembeli sekarang. */
+  progress: {
+    steps: ["Data instalasi", "Pembayaran", "Lisensi aktif"],
+    active: 1,
+  },
+
+  methodTitle: "Pilih cara bayar",
+  methodDescription:
+    "Rekening & QRIS di bawah ini resmi milik MODIGI. Nama pemiliknya selalu dicantumkan — pastikan cocok sebelum mengirim.",
+  accountLabel: "Nomor rekening",
+  /** Label khusus e-wallet — "nomor rekening" terasa salah untuk GoPay/DANA. */
+  ewalletAccountLabel: "Nomor e-wallet",
+  holderLabel: "Atas nama",
+  /** Dipakai saat pembeli mengonfirmasi padahal admin belum mengisi metode apa pun. */
+  noMethodLabel: "Belum dipilih — mohon info rinciannya",
+  copyLabel: "Salin",
+  copiedLabel: "Tersalin",
+  qrisHint:
+    "Scan pakai aplikasi bank atau e-wallet apa pun. Nominalnya sudah kami cantumkan di ringkasan supaya tidak salah isi.",
+  qrisMissing:
+    "Gambar QRIS belum diunggah admin. Tekan Konfirmasi Pembayaran — admin mengirimkannya di chat yang sama.",
+
+  referenceLabel: "Nama pengirim / keterangan",
+  referencePlaceholder: "mis. Budi Santoso — BCA",
+  referenceHint:
+    "Nama yang muncul di mutasi bank. Dengan ini admin lebih cepat mencocokkan pembayaran dan mengaktifkan lisensi Anda.",
+  referenceOptional: "Opsional",
+
+  confirmLabel: "Konfirmasi Pembayaran",
+  confirmNote:
+    "Membuka WhatsApp admin berisi ringkasan pesanan dan cara bayar yang Anda pilih — tidak perlu mengetik ulang apa pun.",
+  confirmReminder:
+    "Pastikan pembayarannya sudah terkirim sebelum menekan tombol ini, ya. Admin memverifikasi lalu mengirim lisensinya di chat yang sama.",
+
+  recapTitle: "Rincian pesanan",
+  totalItemLabel: "Total Item",
+  recapItemSuffix: "produk",
+  orderNoLabel: "Nomor pesanan",
+  totalLabel: "Jumlah yang harus dibayar",
+  copyTotalLabel: "Salin nominal",
+  backToCheckout: "Ubah data pesanan",
+
+  /** Rincian cara bayar belum diisi admin — bukan alasan menghalangi pembeli. */
+  emptyMethods: {
+    title: "Rincian cara bayar belum diatur",
+    description:
+      "Admin belum menambahkan nomor rekening atau QRIS. Tekan Konfirmasi Pembayaran di bawah — admin mengirim rinciannya di chat yang sama, dan pesanan Anda tetap tercatat.",
+  },
+
+  missing: {
+    title: "Belum ada pesanan di perangkat ini",
+    description:
+      "Halaman pembayaran menampilkan pesanan yang dibuat dari browser ini. Kalau Anda sudah memesan sebelumnya, cukup lanjutkan pemesannya lewat chat WhatsApp.",
+    action: { label: "Lihat Katalog", href: "/produk" },
+  },
+};
+
 /** Teks halaman konfirmasi (/checkout/selesai). */
 export const orderDoneCopy = {
   title: "Pesanan terkirim",
   description:
-    "Ringkasan pesanan sudah dibuka di WhatsApp admin. Rincian pembayaran dibalas di chat yang sama pada jam operasional 08.00–22.00 WIB.",
+    "Pesanan Anda sudah tercatat. Begitu konfirmasi pembayaran terkirim, admin memverifikasi lalu mengirim lisensinya di chat yang sama.",
   orderNoLabel: "Nomor pesanan",
   createdAtLabel: "Dikirim",
   customerTitle: "Dikirim ke",
@@ -207,9 +290,26 @@ export const orderDoneCopy = {
   stepsTitle: "Setelah ini",
   steps: [
     { title: "Simpan nomor pesanan", description: "Sebutkan nomornya kalau perlu menanyakan status." },
-    { title: "Bayar sesuai rincian", description: "Transfer bank atau QRIS — rinciannya dikirim admin." },
+    {
+      title: "Admin verifikasi pembayaran",
+      description: "Rata-rata beberapa menit pada jam operasional 08.00–22.00 WIB.",
+    },
     { title: "Terima lisensi & panduan", description: "Dikirim di chat yang sama, siap diaktivasi." },
   ],
+  payment: {
+    title: "Pembayaran",
+    paidBadge: "Konfirmasi terkirim",
+    unpaidBadge: "Belum dibayar",
+    paidNote:
+      "Ringkasan pembayaran Anda sudah dibuka di WhatsApp admin. Kami verifikasi, lalu lisensinya dikirim di chat yang sama.",
+    unpaidNote:
+      "Pesanan ini belum dibayar. Buka halaman pembayaran untuk melihat nomor rekening atau QRIS-nya.",
+    methodLabel: "Cara bayar",
+    referenceLabel: "Keterangan",
+    sentAtLabel: "Dikonfirmasi",
+    payLabel: "Pilih cara bayar",
+    payAgainLabel: "Buka halaman pembayaran lagi",
+  },
   waLabel: "Buka WhatsApp admin lagi",
   catalogLabel: "Lanjut belanja",
   note: "Halaman ini hanya tersimpan di browser ini — simpan nomor pesanannya kalau perlu arsip.",

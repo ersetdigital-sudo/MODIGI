@@ -1,5 +1,13 @@
 import { formatCompact, formatRupiah } from "@/lib/format";
-import type { CartItem, CartLine, CartProduct, Customer, Order, OrderItem } from "@/types";
+import type {
+  CartItem,
+  CartLine,
+  CartProduct,
+  Customer,
+  Order,
+  OrderItem,
+  PaymentChoice,
+} from "@/types";
 
 /**
  * Isi keranjang & pesanan — semuanya di browser.
@@ -15,6 +23,7 @@ import type { CartItem, CartLine, CartProduct, Customer, Order, OrderItem } from
 
 export const CART_STORAGE_KEY = "modigi:keranjang";
 export const ORDER_STORAGE_KEY = "modigi:pesanan-terakhir";
+export const PAYMENT_STORAGE_KEY = "modigi:pembayaran-terakhir";
 
 /** Nama event internal supaya badge keranjang ikut berubah tanpa reload. */
 export const CART_EVENT = "modigi:keranjang-berubah";
@@ -383,7 +392,142 @@ export function orderMessage(order: Order, wpPassword?: string) {
     // yang dikirim langsung dari formulir saat pembeli menekan "Buat Pesanan".
     wpPassword ? `Password WP-Admin: ${wpPassword}` : null,
     ``,
-    `${formatCompact(order.items.length)} jenis produk · mohon info cara pembayarannya.`,
+    `${formatCompact(order.items.length)} jenis produk · saya lanjut pilih cara bayar, konfirmasinya saya kirim setelah transfer.`,
+  ]
+    .filter((teks): teks is string => teks !== null)
+    .join("\n");
+}
+
+// ---------------------------------------------------------------------------
+// Pembayaran
+// ---------------------------------------------------------------------------
+
+/** Event internal: pilihan pembayaran berubah (dipakai halaman konfirmasi). */
+export const PAYMENT_EVENT = "modigi:pembayaran-berubah";
+
+function uraiPembayaran(mentah: string | null): PaymentChoice | null {
+  if (!mentah) return null;
+
+  try {
+    const data = JSON.parse(mentah) as PaymentChoice;
+    if (!data || typeof data !== "object" || !data.orderNo || !data.methodLabel) return null;
+
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+let bayarMentah: string | null = null;
+let bayarSnapshot: PaymentChoice | null = null;
+
+/** Sama seperti keranjang: hasil parse di-cache supaya snapshotnya stabil. */
+export function getPaymentSnapshot(): PaymentChoice | null {
+  let mentah = "";
+
+  try {
+    mentah = window.localStorage.getItem(PAYMENT_STORAGE_KEY) ?? "";
+  } catch {
+    mentah = "";
+  }
+
+  if (mentah !== bayarMentah) {
+    bayarMentah = mentah;
+    bayarSnapshot = uraiPembayaran(mentah);
+  }
+
+  return bayarSnapshot;
+}
+
+export function getPaymentServerSnapshot(): PaymentChoice | null {
+  return null;
+}
+
+export function subscribePayment(callback: () => void) {
+  if (!adaWindow()) return () => {};
+
+  window.addEventListener(PAYMENT_EVENT, callback);
+  window.addEventListener("storage", callback);
+
+  return () => {
+    window.removeEventListener(PAYMENT_EVENT, callback);
+    window.removeEventListener("storage", callback);
+  };
+}
+
+/**
+ * Simpan cara bayar yang dipilih pembeli.
+ *
+ * Isinya cuma **pilihan**, bukan bukti pembayaran: yang benar-benar membuktikan
+ * uang masuk adalah mutasi rekening dan catatan admin di dashboard. Karena itu
+ * data ini aman disimpan di browser — dan halaman konfirmasi bisa memakainya
+ * untuk menampilkan "Anda memilih BCA" serta mengirim ulang konfirmasinya.
+ */
+export function writePaymentChoice(pilihan: PaymentChoice) {
+  if (!adaWindow()) return;
+
+  try {
+    window.localStorage.setItem(PAYMENT_STORAGE_KEY, JSON.stringify(pilihan));
+  } catch {
+    // abaikan
+  }
+
+  window.dispatchEvent(new Event(PAYMENT_EVENT));
+}
+
+/** Pilihan pembayaran yang tersimpan di perangkat ini (`null` kalau belum ada). */
+export function readPaymentChoice(): PaymentChoice | null {
+  if (!adaWindow()) return null;
+
+  try {
+    return uraiPembayaran(window.localStorage.getItem(PAYMENT_STORAGE_KEY));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Pesan WhatsApp **kedua**: konfirmasi pembayaran.
+ *
+ * Dipisah dari `orderMessage` karena dua hal ini memang dua peristiwa berbeda:
+ * pesanan dibuat, lalu uangnya dikirim. Admin memakai pesan pertama untuk mulai
+ * memasang plugin (di situ ada password WP-Admin) dan pesan kedua untuk
+ * mencocokkan uang yang masuk ke mutasinya.
+ *
+ * Rincian pesanannya ikut diulang di sini supaya admin bisa memverifikasi satu
+ * pesan ini saja tanpa perlu menggulir chat.
+ */
+export function paymentConfirmMessage(
+  order: Order,
+  pilihan: PaymentChoice,
+  metode?: { accountNo?: string; accountName?: string },
+) {
+  const baris = order.items.map(
+    (item, index) =>
+      `${index + 1}. ${item.name} — ${item.qty} lisensi × ${formatRupiah(item.price)} = ${formatRupiah(item.subtotal)}`,
+  );
+
+  return [
+    `Halo MODIGI, saya sudah melakukan pembayaran.`,
+    ``,
+    `No. pesanan: ${order.orderNo}`,
+    `Cara bayar: ${pilihan.methodLabel}`,
+    `Jumlah: ${formatRupiah(order.total)}`,
+    pilihan.reference ? `Nama pengirim: ${pilihan.reference}` : null,
+    metode?.accountNo
+      ? `Tujuan: ${pilihan.methodLabel} ${metode.accountNo}${metode.accountName ? ` a.n. ${metode.accountName}` : ""}`
+      : null,
+    ``,
+    `Rincian pesanan:`,
+    ...baris,
+    ``,
+    `Data instalasi:`,
+    `Domain WordPress: ${order.customer.domain}`,
+    `Username WP-Admin: ${order.customer.wpUser}`,
+    `Nama: ${order.customer.name}`,
+    `WhatsApp: ${order.customer.whatsapp}`,
+    ``,
+    `Mohon diperiksa, lalu lisensinya diaktifkan. Terima kasih.`,
   ]
     .filter((teks): teks is string => teks !== null)
     .join("\n");

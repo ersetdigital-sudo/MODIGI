@@ -53,7 +53,7 @@ export const syaratKetentuan: PolicyDoc = {
       title: "Cara pesan dan bayar",
       paragraphs: [
         "Pesanan dibuat lewat halaman checkout di situs ini (keranjang opsional), lalu ringkasannya dikirim ke WhatsApp admin. Tidak ada akun yang perlu dibuat.",
-        "Pilih produknya, chat admin untuk menyebutkan domain yang akan diaktivasi, lalu bayar lewat transfer bank, QRIS, atau e-wallet.",
+        "Setelah itu Anda memilih cara bayar di halaman pembayaran — transfer bank, QRIS, atau e-wallet, lengkap dengan nomor tujuannya. Menekan tombol Konfirmasi Pembayaran akan mengirim ringkasan pembayarannya ke WhatsApp admin.",
         "Pesanan mulai diproses setelah pembayaran terkonfirmasi. Rata-rata selesai di bawah 5 menit pada jam operasional.",
       ],
       note: "Domain yang sudah disebut tidak bisa diubah sendiri setelah lisensi aktif. Kalau salah sebut, bilang sebelum membayar; sesudahnya tetap bisa dipindah, hanya perlu proses ulang.",

@@ -113,6 +113,25 @@ export type BarisItemPesanan = {
   subtotal: number;
 };
 
+/**
+ * Rincian cara bayar (papan pengumuman) — bukan catatan uang masuk.
+ * Lihat `BarisPembayaran` di bawah untuk uang yang benar-benar diterima.
+ */
+export type BarisMetodeBayar = {
+  id: string;
+  kind: string;
+  label: string;
+  account_no: string;
+  account_name: string;
+  instructions: string;
+  qr_url: string | null;
+  qr_public_id: string | null;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
 export type BarisPembayaran = {
   id: string;
   order_id: string;

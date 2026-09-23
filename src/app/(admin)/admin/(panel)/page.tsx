@@ -220,11 +220,20 @@ export default async function DasborPage() {
                 Catat pembayaran masuk
               </Link>
             </li>
+            <li>
+              <Link
+                href="/admin/pembayaran"
+                className={tombol.kedua + " w-full justify-start gap-2.5 text-[13.5px]"}
+              >
+                <Wallet className="size-4 shrink-0" aria-hidden="true" />
+                Atur nomor rekening & QRIS
+              </Link>
+            </li>
           </ul>
 
           <p className="mt-4 text-[12.5px] leading-relaxed text-[#6f6f74]">
-            Perubahan produk langsung tampil di situs setelah disimpan — tidak perlu deploy
-            ulang.
+            Perubahan produk dan cara bayar langsung tampil di situs setelah disimpan — tidak
+            perlu deploy ulang.
           </p>
         </Card>
       </div>

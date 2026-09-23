@@ -1,4 +1,4 @@
-import { BadgeCheck, CreditCard, MessageCircle, ShieldCheck, Zap } from "lucide-react";
+import { BadgeCheck, CreditCard, MessageCircle, ShieldCheck, ShoppingCart, Zap } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import type { TrustPoint } from "@/types";
@@ -71,9 +71,9 @@ export const secondOpinion = {
 /** Blok "Cara pesan" di halaman detail. */
 export const orderSteps: { icon: LucideIcon; title: string; description: string }[] = [
   {
-    icon: MessageCircle,
+    icon: ShoppingCart,
     title: "Klik Beli Sekarang",
-    description: "Anda diarahkan ke WhatsApp admin.",
+    description: "Produk masuk keranjang, lalu Anda mengisi data pesanan.",
   },
   {
     icon: CreditCard,
@@ -96,3 +96,111 @@ export const priceNote = "Sekali bayar untuk 1 domain. Aktif 1 tahun, termasuk u
 
 /** Hak cipta di footer halaman katalog & detail. */
 export const storeFooterNote = "Semua merek dagang milik pemiliknya masing-masing.";
+
+// ---------------------------------------------------------------------------
+// Keranjang → Checkout → Konfirmasi
+// ---------------------------------------------------------------------------
+
+/** Teks halaman keranjang (/keranjang). */
+export const cartCopy = {
+  breadcrumb: "Keranjang",
+  title: "Keranjang Anda",
+  description:
+    "Satu lisensi untuk satu domain. Periksa produk dan jumlahnya dulu sebelum lanjut ke checkout.",
+  empty: {
+    title: "Keranjang masih kosong",
+    description:
+      "Belum ada produk yang dipilih. Buka katalog, lalu tekan “Tambah ke Keranjang” pada produk yang Anda butuhkan.",
+    action: { label: "Lihat Katalog", href: "/produk" },
+    helpLabel: "Belum tahu butuh yang mana?",
+    helpMessage: "Halo, saya belum tahu plugin apa yang saya butuhkan untuk website saya.",
+  },
+  perItemNote: "1 lisensi = 1 domain",
+  qtyLabel: "Jumlah lisensi",
+  decreaseLabel: "Kurangi jumlah",
+  increaseLabel: "Tambah jumlah",
+  removeLabel: "Hapus dari keranjang",
+  summary: {
+    title: "Ringkasan",
+    countLabel: "Lisensi",
+    savingsLabel: "Hemat",
+    totalLabel: "Total bayar",
+    totalNote: "Sudah termasuk diskon — tanpa biaya tersembunyi.",
+  },
+  checkoutLabel: "Lanjut ke Checkout",
+  continueLabel: "Lanjut belanja",
+  note: "Langkah berikutnya: isi data pesanan, lalu kirim ringkasannya ke WhatsApp admin.",
+};
+
+/** Teks halaman checkout (/checkout). */
+export const checkoutCopy = {
+  breadcrumb: "Checkout",
+  title: "Data pesanan",
+  description:
+    "Isi data di bawah, lalu kirim pesanan ke WhatsApp admin. Kami balas dengan rincian pembayaran.",
+  formTitle: "Data pembeli",
+  fields: {
+    name: { label: "Nama lengkap", placeholder: "Nama Anda" },
+    whatsapp: {
+      label: "Nomor WhatsApp",
+      placeholder: "08xx xxxx xxxx",
+      hint: "Rincian pembayaran dan lisensi dikirim ke nomor ini.",
+    },
+    email: {
+      label: "Email (opsional)",
+      placeholder: "nama@email.com",
+      hint: "Dipakai untuk arsip lisensi Anda.",
+    },
+    domain: {
+      label: "Domain website",
+      placeholder: "namadomain.com",
+      hint: "1 lisensi = 1 domain. Belum ada domain? Tulis rencana domainnya.",
+    },
+    note: {
+      label: "Catatan (opsional)",
+      placeholder: "Mis. minta sekalian dipasangkan, atau nomor invoice berbeda.",
+    },
+  },
+  agreementLead: "Saya sudah membaca dan setuju dengan",
+  agreementLinks: [
+    { label: "Lisensi Produk", href: "/kebijakan/lisensi" },
+    { label: "Syarat & Ketentuan", href: "/kebijakan/syarat-ketentuan" },
+  ],
+  agreementSuffix: "termasuk aturan satu lisensi untuk satu domain.",
+  submitLabel: "Kirim Pesanan ke WhatsApp",
+  submitHint:
+    "Setelah terkirim, Anda menerima rincian pembayaran (transfer bank atau QRIS) di chat yang sama.",
+  backToCart: "Kembali ke keranjang",
+  empty: {
+    title: "Tidak ada yang bisa di-checkout",
+    description: "Keranjang Anda kosong. Pilih produknya dulu, lalu kembali ke halaman ini.",
+    action: { label: "Lihat Katalog", href: "/produk" },
+  },
+  summaryTitle: "Ringkasan Pesanan",
+};
+
+/** Teks halaman konfirmasi (/checkout/selesai). */
+export const orderDoneCopy = {
+  title: "Pesanan terkirim",
+  description:
+    "Ringkasan pesanan sudah dibuka di WhatsApp admin. Rincian pembayaran dibalas di chat yang sama pada jam operasional 08.00–22.00 WIB.",
+  orderNoLabel: "Nomor pesanan",
+  createdAtLabel: "Dikirim",
+  customerTitle: "Dikirim ke",
+  recapTitle: "Ringkasan pesanan",
+  stepsTitle: "Setelah ini",
+  steps: [
+    { title: "Simpan nomor pesanan", description: "Sebutkan nomornya kalau perlu menanyakan status." },
+    { title: "Bayar sesuai rincian", description: "Transfer bank atau QRIS — rinciannya dikirim admin." },
+    { title: "Terima lisensi & panduan", description: "Dikirim di chat yang sama, siap diaktivasi." },
+  ],
+  waLabel: "Buka WhatsApp admin lagi",
+  catalogLabel: "Lanjut belanja",
+  note: "Halaman ini hanya tersimpan di browser ini — simpan nomor pesanannya kalau perlu arsip.",
+  missing: {
+    title: "Belum ada pesanan di perangkat ini",
+    description:
+      "Halaman konfirmasi hanya bisa menampilkan pesanan yang dikirim dari browser ini. Kalau pesanan Anda sudah terkirim ke WhatsApp, cukup lanjutkan di chat itu.",
+    action: { label: "Lihat Katalog", href: "/produk" },
+  },
+};

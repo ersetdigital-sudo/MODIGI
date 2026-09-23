@@ -18,8 +18,10 @@ export const siteConfig = {
   description:
     "Menyediakan plugin, tema, dan tools digital original untuk website yang lebih baik.",
   footerNote: "More Digital Possibilities",
-  cartCount: 0,
 };
+
+// Catatan: jumlah keranjang TIDAK lagi di sini karena angkanya sudah dinamis
+// (dibaca lewat `useCart()` di `components/cart/use-cart.ts`).
 
 /** Statistik singkat di bawah kolom pencarian hero. */
 export const heroStats: Stat[] = [

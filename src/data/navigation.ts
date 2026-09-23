@@ -68,12 +68,13 @@ export const footerColumns: FooterColumn[] = [
     ],
   },
   {
+    // Cuma berisi halaman yang benar-benar ada. "Blog" dan "Status Layanan"
+    // dibuang karena belum punya isinya — lebih baik tidak ada link sama sekali
+    // daripada link yang berakhir di 404.
     title: "Informasi",
     links: [
       { label: "Tentang MODIGI", href: "/tentang" },
-      { label: "Blog", href: "/blog" },
-      { label: "Status Layanan", href: "/status" },
-      { label: "Testimoni", href: "/testimoni" },
+      { label: "Testimoni Pembeli", href: "/testimoni" },
     ],
   },
   {

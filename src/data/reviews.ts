@@ -322,6 +322,16 @@ const reviewData: Record<string, { reviews: ProductReview[]; breakdown: RatingBr
   },
 };
 
+/**
+ * Semua ulasan dari seluruh produk, masing-masing diberi `productSlug`.
+ * Dipakai halaman Testimoni (/testimoni) yang menampilkan ulasan lintas produk.
+ */
+export function getAllReviews() {
+  return Object.entries(reviewData).flatMap(([productSlug, { reviews }]) =>
+    reviews.map((review) => ({ ...review, productSlug })),
+  );
+}
+
 /** Ulasan + sebaran rating satu produk (kosong kalau slug-nya belum ada datanya). */
 export function getProductReviews(slug: string) {
   return (

@@ -61,11 +61,29 @@ bernomor supaya bagian tertentu gampang dirujuk
 
 ![Syarat & Ketentuan MODIGI](docs/preview-kebijakan.png)
 
+**Kategori & Testimoni** — halaman yang mengubah "belum tahu mau beli apa" dan
+"boleh percaya nggak?" jadi langkah berikutnya
+
+| Kategori | Testimoni |
+| :---: | :---: |
+| ![Kategori produk MODIGI](docs/preview-kategori.png) | ![Testimoni pembeli MODIGI](docs/preview-testimoni.png) |
+
+**Keranjang & Checkout** — dari "suka produknya" sampai pesanan terkirim, tanpa akun
+
+| Keranjang | Checkout |
+| :---: | :---: |
+| ![Keranjang MODIGI](docs/preview-keranjang.png) | ![Checkout MODIGI](docs/preview-checkout.png) |
+
 | Halaman | Deskripsi singkat |
 | --- | --- |
 | `/` | Hero + pencarian, baris kategori, produk terlaris, trust bar, CTA |
 | `/produk` | Katalog: filter kategori, pencarian, urutan, kartu produk dengan badge diskon |
 | `/produk/[slug]` | Detail: tab informasi, 3 kartu statistik, ulasan, buy box sticky, bar beli mobile |
+| `/kategori` | Semua kategori dengan jumlah produk & harga mulai, plus daftar produknya |
+| `/testimoni` | Ulasan dari semua produk, dikelompokkan per produk |
+| `/keranjang` | Daftar item + ubah jumlah + ringkasan (hemat, total) |
+| `/checkout` | Formulir data pembeli + ringkasan + persetujuan lisensi |
+| `/checkout/selesai` | Nomor pesanan, rincian, langkah pembayaran |
 | `/kebijakan/*` | Empat dokumen: Syarat & Ketentuan, Privasi, Refund, Lisensi |
 
 ---
@@ -82,8 +100,16 @@ bernomor supaya bagian tertentu gampang dirujuk
   blok "Cara pesan", produk terkait, dan bar beli khusus mobile
 - **Ulasan ala marketplace**: ringkasan rating + sebaran bintang, filter per bintang,
   tombol "lihat ulasan lainnya", badge pembelian terverifikasi
-- **Alur order WhatsApp**: tombol beli & tanya otomatis mengisi pesan berisi nama
-  produk dan harganya (tanpa akun, tanpa keranjang yang belum selesai)
+- **Keranjang** — isinya disimpan di `localStorage` (hanya slug + jumlah), badge
+  jumlah di header & tab bar mobile ikut berubah tanpa reload
+- **Checkout** — formulir data pembeli (nama, WhatsApp, email, domain, catatan),
+  ringkasan pesanan yang menempel saat scroll, dan persetujuan lisensi
+- **Konfirmasi pesanan** — nomor pesanan, rincian item, data pembeli, dan langkah
+  berikutnya. Isinya dibaca dari `localStorage`, **bukan dari URL**, jadi nomor
+  pesanan & data pembeli tidak tertinggal di riwayat browser
+- **Alur order WhatsApp**: checkout menghasilkan satu pesan pesanan yang lengkap
+  (item, total, nomor pesanan, domain) dan membukanya di chat admin — jadi admin
+  tidak perlu menanyakan ulang; tombol "Tanya Dulu" juga tetap tersedia
 
 **Brand & bantuan**
 
@@ -152,6 +178,8 @@ src/
 │  │  ├─ layout.tsx
 │  │  ├─ page.tsx             # beranda — hanya menyusun urutan section
 │  │  ├─ tentang/page.tsx     # halaman Tentang
+│  │  ├─ kategori/page.tsx    # kategori + produk per kategori
+│  │  ├─ testimoni/page.tsx   # ulasan lintas produk
 │  │  └─ kebijakan/           # 4 dokumen kebijakan (satu kerangka yang sama)
 │  │
 │  └─ (store)/                # chrome store (tema cream/hijau)
@@ -160,11 +188,16 @@ src/
 │     ├─ produk/
 │     │  ├─ page.tsx          # katalog + filter dari search params
 │     │  └─ [slug]/page.tsx   # detail produk (SSG via generateStaticParams)
+│     ├─ keranjang/page.tsx   # keranjang (isi dari localStorage)
+│     ├─ checkout/
+│     │  ├─ page.tsx          # formulir data pembeli + ringkasan
+│     │  └─ selesai/page.tsx  # konfirmasi pesanan
 │     └─ bantuan/page.tsx     # pusat bantuan
 │
 ├─ components/
 │  ├─ layout/                 # header, footer, tab bar mobile
 │  ├─ home/                   # section khusus beranda
+│  ├─ cart/                   # keranjang: hook, tombol, daftar, form checkout
 │  ├─ store/                  # komponen katalog & detail produk
 │  ├─ kebijakan/              # kerangka dokumen kebijakan
 │  └─ ui/                     # komponen kecil yang dipakai ulang
@@ -204,6 +237,11 @@ teks atau menambah produk hampir selalu tidak perlu menyentuh komponen.
 | `/produk` | Dynamic (search params) | Katalog + filter kategori/pencarian/urutan |
 | `/produk/[slug]` | **SSG** | Detail produk — 1 halaman per produk, dibangun saat build |
 | `/bantuan` | Static | Pusat bantuan (6 section ber-anchor) |
+| `/kategori` | Static | Kategori + produk per kategori, dihitung dari data |
+| `/keranjang` | Static + klien | Isi keranjang dari `localStorage` (tidak diindeks) |
+| `/checkout` | Static + klien | Formulir data pembeli + ringkasan pesanan (tidak diindeks) |
+| `/checkout/selesai` | Static + klien | Konfirmasi pesanan terakhir (tidak diindeks) |
+| `/testimoni` | Static | Ulasan lintas produk dari satu sumber data yang sama |
 | `/kebijakan/syarat-ketentuan` | Static | Syarat & Ketentuan — 9 bagian |
 | `/kebijakan/privasi` | Static | Kebijakan Privasi — 9 bagian |
 | `/kebijakan/refund` | Static | Refund & Garansi — 7 bagian |
@@ -224,7 +262,9 @@ teks atau menambah produk hampir selalu tidak perlu menyentuh komponen.
 | **Ulasan pembeli** | `src/data/reviews.ts` (produk tanpa data ulasan otomatis tidak menampilkan section) |
 | **Nomor WhatsApp toko** | `src/data/store.ts` → `whatsappNumber` |
 | Teks katalog, buy box, poin trust | `src/data/store.ts` |
+| Teks keranjang / checkout / konfirmasi | `src/data/store.ts` → `cartCopy`, `checkoutCopy`, `orderDoneCopy` |
 | Copy halaman Tentang / Bantuan | `src/data/about.ts`, `src/data/support.ts` |
+| Copy halaman Kategori / Testimoni | `src/data/kategori.ts`, `src/data/testimoni.ts` |
 | **Teks 4 dokumen kebijakan** | `src/data/policies.ts` (satu dokumen = satu objek) |
 | Urutan section beranda | `src/app/(main)/page.tsx` |
 | Tema halaman store (cream/hijau) | `src/app/(store)/store.css` |
@@ -315,7 +355,19 @@ Beberapa keputusan yang sengaja diambil, dan alasannya:
    artwork. Banner promo geser dan kartu kode promo pernah dicoba di beranda mobile,
    keduanya dibuang: terlalu banyak konten berdesakan di satu layar kecil. Efeknya
    mobile langsung masuk ke baris kategori setelah kolom pencarian.
-9. **Empat dokumen kebijakan memakai satu kerangka** (`components/kebijakan/`).
+9. **Keranjang memakai `localStorage` sebagai store, dibaca lewat
+   `useSyncExternalStore`** (`lib/cart.ts` + `components/cart/use-cart.ts`). Jadi
+   tidak ada provider/context yang perlu dipasang: header, tab bar mobile, halaman
+   keranjang, dan checkout semuanya membaca angka yang sama, dan tab lain yang
+   mengubah keranjang pun ikut tersinkron. Yang disimpan hanya `slug` + jumlah —
+   harga selalu diambil ulang dari katalog, sehingga tidak pernah ada harga basi
+   yang tertinggal di browser pembeli.
+10. **Checkout tanpa backend.** Pesanan disimpan di `localStorage` (untuk halaman
+   konfirmasi) dan salinannya dikirim ke WhatsApp admin. Ini jujur terhadap kondisi
+   sekarang: tidak ada server yang menampung data pembeli, dan tidak ada nomor
+   rekening palsu yang ditampilkan di halaman konfirmasi — rincian pembayaran tetap
+   dikirim admin lewat chat.
+11. **Empat dokumen kebijakan memakai satu kerangka** (`components/kebijakan/`).
    Isinya di `data/policies.ts`, jadi menambah dokumen kelima cukup menambah satu
    objek + satu `page.tsx` sebaris. Navigasi (pindah dokumen & daftar isi) memakai
    `<details>` di mobile, jadi seluruh halaman jalan tanpa JavaScript, dan setiap
@@ -346,12 +398,15 @@ Nomor WhatsApp, email (`halo@modigi.id`), jam operasional, dan seluruh angka kla
 
 ## Roadmap
 
-- [ ] **Keranjang** — state + `localStorage`, badge jumlah di header
-- [ ] **Halaman `/keranjang`** — ubah jumlah, hapus item, ringkasan
-- [ ] **Halaman `/checkout`** — data pembeli + domain, ringkasan pesanan
-- [ ] **Konfirmasi pesanan** — instruksi transfer atau integrasi payment gateway
+- [x] **Keranjang** — `localStorage` + badge jumlah hidup di header & FAB mobile
+- [x] **Halaman `/keranjang`** — ubah jumlah, hapus item, ringkasan, hemat
+- [x] **Halaman `/checkout`** — data pembeli + domain, ringkasan, persetujuan lisensi
+- [x] **Konfirmasi pesanan** — nomor pesanan, rincian, langkah pembayaran
+- [x] **Halaman `/kategori` & `/testimoni`** — semua tautan header & footer hidup
+- [ ] **Payment gateway** — QRIS/transfer otomatis, bukan konfirmasi manual di chat
 - [ ] **Backend/CMS** untuk produk, pesanan, dan pengiriman lisensi otomatis
-- [ ] **Akun pelanggan** — riwayat lisensi & perpanjangan
+- [ ] **Akun pelanggan** — riwayat lisensi, perpanjangan (tombol "Masuk" masih
+      mengarah ke `/masuk` yang belum ada)
 - [ ] **Blog/artikel** untuk kebutuhan SEO
 
 ---

@@ -24,7 +24,11 @@ export const metadata: Metadata = {
  *
  * Header/footer dipisah ke layout per-route-group:
  * - `(main)`  → chrome MODIGI (header gelap, footer lengkap, tab bar mobile)
- * - `(store)` → chrome halaman katalog & detail produk (gaya template)
+ * - `(store)` → chrome halaman katalog, detail produk, keranjang & checkout
+ *
+ * Isi keranjang tidak butuh provider di sini: sumbernya `localStorage` dan dibaca
+ * lewat `useCart()` (`components/cart/use-cart.ts`), jadi header, tab bar mobile,
+ * halaman keranjang, dan checkout otomatis membaca angka yang sama.
  */
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

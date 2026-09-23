@@ -111,6 +111,65 @@ export type RatingBreakdown = {
   1: number;
 };
 
+/**
+ * Isi keranjang yang disimpan di `localStorage`.
+ *
+ * Sengaja HANYA slug + jumlah — harga, nama, dan artwork selalu diambil ulang
+ * dari `products.ts` saat dibaca. Jadi kalau harga di katalog berubah, isi
+ * keranjang yang lama tidak menyimpan harga basi.
+ */
+export type CartItem = {
+  slug: string;
+  qty: number;
+};
+
+/** Baris keranjang yang sudah dicocokkan dengan data produk. */
+export type CartLine = {
+  slug: string;
+  qty: number;
+  product: Product;
+  /** `product.price` × `qty`. */
+  subtotal: number;
+};
+
+/** Baris pesanan (bentuk ringkas, aman disimpan di `localStorage`). */
+export type OrderItem = {
+  slug: string;
+  name: string;
+  price: number;
+  qty: number;
+  subtotal: number;
+};
+
+/** Data pembeli yang diisi di halaman checkout. */
+export type Customer = {
+  name: string;
+  whatsapp: string;
+  email: string;
+  /** Domain tempat lisensi akan dipakai — 1 lisensi = 1 domain. */
+  domain: string;
+  note?: string;
+};
+
+/**
+ * Pesanan yang tersimpan setelah checkout.
+ *
+ * Aplikasi ini tidak punya backend: pesanan dicatat di `localStorage` supaya
+ * halaman konfirmasi bisa menampilkannya, dan salinan lengkapnya dikirim ke
+ * admin lewat WhatsApp (satu-satunya "database" yang benar-benar dipakai).
+ */
+export type Order = {
+  orderNo: string;
+  /** ISO string supaya bisa diformat ulang kapan saja. */
+  createdAt: string;
+  items: OrderItem[];
+  customer: Customer;
+  /** Total harga jual (setelah diskon). */
+  total: number;
+  /** Total harga resmi sebelum diskon — dasar info "hemat". */
+  compareAtTotal: number;
+};
+
 /** Poin keunggulan yang tampil di baris trust di bawah daftar produk. */
 export type TrustPoint = {
   title: string;

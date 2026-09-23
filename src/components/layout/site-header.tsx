@@ -1,9 +1,10 @@
 "use client";
 
-import { ChevronDown, Menu, ShoppingCart, X } from "lucide-react";
+import { ChevronDown, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { CartLink } from "@/components/cart/cart-link";
 import { ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { Logo } from "@/components/ui/logo";
@@ -77,17 +78,9 @@ export function SiteHeader() {
         <div className="ml-auto flex items-center gap-2 lg:gap-3">
           <SearchForm id="header-search" variant="header" className="hidden md:flex" />
 
-          {/* Di mobile keranjang dipindah ke FAB di bottom tab bar. */}
-          <Link
-            href="/keranjang"
-            aria-label="Keranjang belanja"
-            className="relative hidden size-10 place-items-center rounded-lg text-white/85 transition-colors hover:bg-white/5 hover:text-white lg:grid"
-          >
-            <ShoppingCart className="size-5" aria-hidden="true" />
-            <span className="absolute right-1 top-1 grid size-4 place-items-center rounded-full bg-gold text-[10px] font-bold text-ink">
-              {siteConfig.cartCount}
-            </span>
-          </Link>
+          {/* Di mobile keranjang dipindah ke FAB di bottom tab bar.
+              Jumlahnya datang dari state keranjang asli (`CartLink`). */}
+          <CartLink />
 
           <ButtonLink href="/masuk" size="sm" className="hidden sm:inline-flex">
             Masuk

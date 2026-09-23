@@ -80,13 +80,17 @@
 .store .btn-ghost:hover {
   border-color: var(--ink);
 }
+/* Tombol WhatsApp.
+   Warna hijau "WhatsApp" yang biasa (#1fa855) hanya 3,1:1 dengan teks putih —
+   gagal WCAG AA untuk teks 16px. Dipakai hijau aksen toko (#15803d) yang 5,0:1,
+   jadi tetap jelas ini tombol WhatsApp tapi teksnya benar-benar terbaca. */
 .store .btn-wa {
-  background: #1fa855;
+  background: #15803d;
   color: #fff;
   padding: 0.85rem 1.6rem;
 }
 .store .btn-wa:hover {
-  background: #178a45;
+  background: #116632;
 }
 .store .btn-sm {
   padding: 0.65rem 1.25rem;
@@ -267,6 +271,40 @@
     opacity: 1;
     transform: none;
   }
+}
+
+/* Form (checkout) */
+.store .field-label {
+  font-size: 13.5px;
+  font-weight: 700;
+}
+.store .hint {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.store .input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  padding: 0.8rem 1rem;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--ink);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.store .input::placeholder {
+  color: #a8a29a;
+}
+.store .input:focus-visible {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgb(21 19 16 / 0.08);
+}
+/* Field yang gagal validasi bawaan browser ditandai, bukan cuma "diam". */
+.store .input:user-invalid {
+  border-color: #b42318;
 }
 
 /* Sembunyikan scrollbar di baris chip */

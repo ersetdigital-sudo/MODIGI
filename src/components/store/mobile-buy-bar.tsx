@@ -1,16 +1,14 @@
-import { ShoppingCart } from "lucide-react";
-
+import { BuyNowButton } from "@/components/cart/add-to-cart";
 import { WhatsappIcon } from "@/components/store/whatsapp-icon";
 import { formatRupiah } from "@/lib/format";
 import { whatsappLink } from "@/lib/whatsapp";
 import type { Product } from "@/types";
 
 /**
- * Bar beli yang menempel di bawah layar (hanya < lg) — harga + tombol WhatsApp,
- * supaya pembeli tidak perlu menggulir balik ke kotak pembelian.
+ * Bar beli yang menempel di bawah layar (hanya < lg) — harga + tombol tanya
+ * (WhatsApp) dan tombol beli yang langsung masuk keranjang & ke checkout.
  */
 export function MobileBuyBar({ product }: { product: Product }) {
-  const orderMessage = `Halo, saya mau order ${product.name} (${formatRupiah(product.price)}).`;
   const askMessage = `Halo, saya mau tanya soal ${product.name}.`;
 
   return (
@@ -32,15 +30,7 @@ export function MobileBuyBar({ product }: { product: Product }) {
         <WhatsappIcon className="size-[18px]" />
       </a>
 
-      <a
-        className="btn btn-dark btn-sm"
-        href={whatsappLink(orderMessage)}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <ShoppingCart className="size-[18px]" aria-hidden="true" />
-        Beli
-      </a>
+      <BuyNowButton product={product} className="btn btn-dark btn-sm w-auto" label="Beli" />
     </div>
   );
 }

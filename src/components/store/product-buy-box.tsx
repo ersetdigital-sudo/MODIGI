@@ -1,5 +1,6 @@
-import { CreditCard, ShoppingCart, Tag } from "lucide-react";
+import { CreditCard, Tag } from "lucide-react";
 
+import { AddToCartButton, BuyNowButton } from "@/components/cart/add-to-cart";
 import { WhatsappIcon } from "@/components/store/whatsapp-icon";
 import { discountPercent } from "@/data/products";
 import { paymentNote, priceNote, productTrust } from "@/data/store";
@@ -8,12 +9,11 @@ import { whatsappLink } from "@/lib/whatsapp";
 import type { Product } from "@/types";
 
 /**
- * Kotak pembelian di halaman detail: diskon, harga, dua tombol WhatsApp
- * (beli / tanya), daftar trust, dan catatan pembayaran.
+ * Kotak pembelian di halaman detail: diskon, harga, tombol beli/keranjang/tanya,
+ * daftar trust, dan catatan pembayaran.
  * Di desktop menempel (sticky) di kolom kanan; di mobile jadi bagian normal.
  */
 export function ProductBuyBox({ product }: { product: Product }) {
-  const orderMessage = `Halo, saya mau order ${product.name} (${formatRupiah(product.price)}).`;
   const askMessage = `Halo, saya mau tanya soal ${product.name}.`;
 
   return (
@@ -40,15 +40,9 @@ export function ProductBuyBox({ product }: { product: Product }) {
       <p className="mt-2 text-[13px] text-[var(--muted)]">{priceNote}</p>
 
       <div className="mt-5 flex flex-col gap-2.5">
-        <a
-          className="btn btn-dark w-full"
-          href={whatsappLink(orderMessage)}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <ShoppingCart className="size-[18px]" aria-hidden="true" />
-          Beli Sekarang
-        </a>
+        <BuyNowButton product={product} />
+
+        <AddToCartButton product={product} />
 
         <a
           className="btn btn-wa w-full"

@@ -1,11 +1,11 @@
 "use client";
 
-import { Boxes, Home, LayoutGrid, ShoppingCart, User } from "lucide-react";
+import { Boxes, Home, LayoutGrid, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ComponentType } from "react";
 
-import { siteConfig } from "@/data/site";
+import { CartLink } from "@/components/cart/cart-link";
 import { cn } from "@/lib/utils";
 
 type Tab = {
@@ -44,16 +44,7 @@ export function MobileTabBar() {
         <TabButton tab={tabs[1]} active={isActive(tabs[1].href)} />
 
         <div className="relative -top-4">
-          <Link
-            href="/keranjang"
-            aria-label={`Keranjang belanja, ${siteConfig.cartCount} produk`}
-            className="relative grid size-14 place-items-center rounded-full border-4 border-white bg-ink text-gold shadow-lift transition-colors hover:bg-ink-700 focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:outline-none"
-          >
-            <ShoppingCart className="size-6" aria-hidden="true" />
-            <span className="absolute -right-1 -top-1 grid size-5 place-items-center rounded-full border-2 border-white bg-gold text-[10px] font-bold text-ink">
-              {siteConfig.cartCount}
-            </span>
-          </Link>
+          <CartLink variant="fab" />
         </div>
 
         <TabButton tab={tabs[2]} active={isActive(tabs[2].href)} />

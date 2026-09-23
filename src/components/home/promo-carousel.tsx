@@ -14,7 +14,8 @@ import { cn } from "@/lib/utils";
 const slides = trendingProducts.slice(0, 3);
 
 /**
- * Banner promo geser (swipe) untuk hero versi mobile — hanya tampil di < lg.
+ * Banner promo geser (swipe) — mobile-only (`lg:hidden`), diletakkan di bawah hero
+ * karena hero sendiri sekarang tampil identik dengan desktop.
  *
  * Meniru wireframe mobile: kartu cream dengan pola titik emas, teks di sisi kiri,
  * mockup box produk menempel di kanan, plus indikator titik di bawah kartu.

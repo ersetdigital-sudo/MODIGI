@@ -2,45 +2,44 @@ import Image from "next/image";
 import Link from "next/link";
 
 import heroBackground from "@/assets/hero-background.png";
-import { PromoCarousel } from "@/components/home/promo-carousel";
 import { Container } from "@/components/ui/container";
 import { SearchForm } from "@/components/ui/search-form";
-import { heroGreeting, heroStats, popularSearches } from "@/data/site";
+import { heroStats, popularSearches } from "@/data/site";
 import { cn } from "@/lib/utils";
 
 /**
- * Hero halaman utama — dua tampilan dari satu DOM:
- * - < lg : sapaan + judul + pencarian + banner promo geser (mengikuti wireframe mobile).
- * - >= lg: hero gelap full-bleed dengan artwork (tampilan asli).
+ * Hero halaman utama — **satu tampilan untuk semua ukuran layar**: panel gelap
+ * full-bleed dengan artwork, eyebrow emas, judul, kolom pencarian, kata kunci
+ * populer, dan empat statistik. Yang berubah antar breakpoint hanya skala
+ * tipografi + kerapatan jarak, jadi mobile & desktop tidak lagi dua desain berbeda.
+ *
+ * Isi teks/warna sepenuhnya dari token di `globals.css` dan data di `src/data/site.ts`.
  */
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-cream lg:bg-ink lg:text-white">
+    <section className="relative overflow-hidden bg-ink text-white">
       <HeroBackdrop />
 
       <Container className="relative">
-        {/* pt-8 memberi ruang untuk pembatas gelombang header di mobile. */}
-        <div className="max-w-2xl pb-2 pt-8 lg:py-24">
-          <p className="text-sm text-muted lg:hidden">{heroGreeting}</p>
-
-          <p className="hidden items-center gap-3 text-[11px] font-semibold uppercase leading-relaxed tracking-[0.18em] text-gold sm:tracking-[0.22em] lg:flex">
+        <div className="max-w-2xl py-10 sm:py-14 lg:py-24">
+          <p className="flex items-center gap-3 text-[11px] font-semibold uppercase leading-relaxed tracking-[0.18em] text-gold sm:tracking-[0.22em]">
             Plugin Original, Website Lebih Maju
             <span className="hidden h-px w-10 shrink-0 bg-gold/50 sm:block" aria-hidden="true" />
           </p>
 
-          <h1 className="mt-1 text-[26px] font-extrabold leading-[1.15] tracking-tight text-ink lg:mt-5 lg:text-[52px] lg:leading-[1.05] lg:text-white">
+          <h1 className="mt-3 text-[27px] font-extrabold leading-[1.15] tracking-tight text-white lg:mt-5 lg:text-[52px] lg:leading-[1.05]">
             Butuh Plugin WordPress?
             <br />
-            Cari di <span className="text-gold-deep lg:text-gold">MODIGI</span>.
+            Cari di <span className="text-gold">MODIGI</span>.
           </h1>
 
-          <p className="mt-2.5 text-[13px] leading-relaxed text-muted lg:mt-5 lg:text-[15px] lg:text-muted-dark">
+          <p className="mt-2.5 text-[13.5px] leading-relaxed text-muted-dark lg:mt-5 lg:text-[15px]">
             Plugin dan tools pilihan untuk membangun, mengelola, dan mengembangkan website.
           </p>
 
           <SearchForm id="hero-search" className="mt-5 lg:mt-8" />
 
-          <div className="mt-5 hidden flex-wrap items-center gap-2 lg:flex">
+          <div className="mt-5 flex flex-wrap items-center gap-2">
             <span className="text-xs font-medium text-muted-dark">Pencarian populer:</span>
             {popularSearches.map((keyword) => (
               <Link
@@ -53,7 +52,7 @@ export function HeroSection() {
             ))}
           </div>
 
-          <dl className="mt-10 hidden grid-cols-2 gap-x-3 gap-y-5 border-t border-line-dark pt-8 sm:grid-cols-4 sm:gap-x-0 sm:gap-y-6 lg:grid">
+          <dl className="mt-8 grid grid-cols-2 gap-x-3 gap-y-5 border-t border-line-dark pt-7 sm:grid-cols-4 sm:gap-x-0 sm:gap-y-6 lg:mt-10 lg:pt-8">
             {heroStats.map(({ value, label, icon: Icon }, index) => (
               <div
                 key={label}
@@ -76,9 +75,7 @@ export function HeroSection() {
           </dl>
         </div>
 
-        <PromoCarousel className="mt-6 pb-2 lg:hidden" />
-
-        <div className="hidden border-t border-line-dark py-5 text-center lg:block">
+        <div className="border-t border-line-dark py-5 text-center">
           <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-dark">
             Lebih dari Sekadar Plugin
           </p>
@@ -89,19 +86,22 @@ export function HeroSection() {
 }
 
 /**
- * Elemen dekoratif hero: artwork full-bleed (`src/assets/hero-background.png`) + lapisan gelap
- * supaya teks di sisi kiri tetap kontras, lalu teks vertikal sebagai aksen sudut.
- * Hanya tampil di desktop — di mobile hero memakai banner promo di atas latar cream.
+ * Elemen dekoratif hero: artwork full-bleed (`src/assets/hero-background.png`) plus
+ * lapisan gelap supaya teks tetap kontras, lalu teks vertikal sebagai aksen sudut.
+ *
+ * Lapisan gelapnya dua bentuk karena kebutuhan berbeda:
+ * - mobile : tirai rata (`bg-ink/65`) — teks memakai hampir seluruh lebar layar,
+ *            jadi seluruh bidang digelapkan. Angka 65% bukan tebakan: artwork ini
+ *            memang gelap (median luminance 0,021 / puncak 0,364), dan pada 65%
+ *            kontras teks putih terukur 13:1 — jauh di atas ambang WCAG AAA.
+ * - desktop: gradien dari kiri — teks hanya di kolom kiri, artwork boleh terlihat.
  *
  * Asset di-import (bukan path mentah) supaya URL-nya ikut ber-hash: cukup timpa filenya,
  * cache browser otomatis kebuang.
  */
 function HeroBackdrop() {
   return (
-    <div
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-0 hidden overflow-hidden lg:block"
-    >
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
       <Image
         src={heroBackground}
         alt=""
@@ -112,7 +112,8 @@ function HeroBackdrop() {
         className="object-cover object-center"
       />
 
-      <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/80 to-ink/30" />
+      <div className="absolute inset-0 bg-ink/65 lg:hidden" />
+      <div className="absolute inset-0 hidden bg-gradient-to-r from-ink via-ink/80 to-ink/30 lg:block" />
       <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-ink to-transparent" />
 
       <span className="absolute right-6 top-24 hidden text-[10px] font-semibold uppercase tracking-[0.4em] text-muted-dark [writing-mode:vertical-rl] lg:block">

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { CartView } from "@/components/cart/cart-view";
+import { ambilWhatsappNumber } from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
   title: "Keranjang",
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
 };
 
 /** Halaman keranjang — isinya hidup di klien (`localStorage`), kerangkanya statis. */
-export default function KeranjangPage() {
-  return <CartView />;
+export default async function KeranjangPage() {
+  const waNumber = await ambilWhatsappNumber();
+  return <CartView waNumber={waNumber} />;
 }

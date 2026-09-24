@@ -32,8 +32,8 @@ export function SiteHeader() {
           <Logo />
         </Link>
 
-        <nav aria-label="Navigasi utama" className="hidden lg:block">
-          <ul className="flex items-center gap-1">
+        <nav aria-label="Navigasi utama" className="hidden lg:block lg:flex-1">
+          <ul className="flex items-center justify-center gap-1">
             {mainNav.map((item) => (
               <li key={item.label} className="group relative">
                 <Link

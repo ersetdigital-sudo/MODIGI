@@ -11,7 +11,7 @@ import { getAllReviews, getProductReviews } from "@/data/reviews";
 import { testimoniCta, testimoniHero, testimoniSections, testimoniSummary } from "@/data/testimoni";
 import { ambilProduk } from "@/lib/catalog";
 import { formatCompact, formatRating } from "@/lib/format";
-import { whatsappLink } from "@/lib/whatsapp";
+import { ambilWhatsappNumber, whatsappLink } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -31,6 +31,7 @@ export const metadata: Metadata = {
  * lewat dashboard langsung ikut muncul di halaman ini.
  */
 export default async function TestimoniPage() {
+  const waNumber = await ambilWhatsappNumber();
   const products = await ambilProduk();
   const semuaUlasan = getAllReviews();
   const terverifikasi = semuaUlasan.filter((review) => review.verified).length;
@@ -217,7 +218,7 @@ export default async function TestimoniPage() {
 
               {/* `py-1.5` bikin area kliknya ≥24px (WCAG 2.2) tanpa menggeser tata letak. */}
               <a
-                href={whatsappLink(testimoniCta.secondary.message)}
+                href={whatsappLink(testimoniCta.secondary.message, waNumber)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block py-1.5 text-[14px] font-semibold text-muted-dark underline decoration-line-dark underline-offset-4 transition-colors hover:text-white"

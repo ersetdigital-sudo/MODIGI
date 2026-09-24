@@ -24,7 +24,7 @@ const ikonLangkah = [FileText, Smartphone, CheckCircle2];
  * (ditawari tombol menuju halaman pembayaran). Yang menentukan hanya "apakah
  * pembeli bilang sudah bayar" — verifikasi tetap di admin, bukan di halaman ini.
  */
-export function OrderDone() {
+export function OrderDone({ waNumber }: { waNumber?: string }) {
   const { order, ready } = useLastOrder();
   const { pilihan } = usePaymentChoice();
 
@@ -216,7 +216,7 @@ export function OrderDone() {
 
         <a
           className="btn btn-wa mt-5 w-full"
-          href={whatsappLink(orderMessage(order))}
+          href={whatsappLink(orderMessage(order), waNumber)}
           target="_blank"
           rel="noopener noreferrer"
         >

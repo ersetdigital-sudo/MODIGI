@@ -5,7 +5,7 @@ import { CatalogBrowser } from "@/components/store/catalog-browser";
 import { WhatsappIcon } from "@/components/store/whatsapp-icon";
 import { catalogCopy, sortOptions, type SortValue } from "@/data/store";
 import { ambilKategori, ambilProduk } from "@/lib/catalog";
-import { whatsappLink } from "@/lib/whatsapp";
+import { ambilWhatsappNumber, whatsappLink } from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
   title: "Semua Produk",
@@ -30,7 +30,7 @@ export default async function KatalogPage(props: PageProps<"/produk">) {
 
   // Produk & kategori dibaca dari database (cadangan: data statis), jadi katalog
   // selalu menampilkan apa yang sedang aktif di dashboard admin.
-  const [products, kategoriDaftar] = await Promise.all([ambilProduk(), ambilKategori()]);
+  const [products, kategoriDaftar, waNumber] = await Promise.all([ambilProduk(), ambilKategori(), ambilWhatsappNumber()]);
   const categoryNames = Object.fromEntries(
     kategoriDaftar.map((item) => [item.slug, item.name]),
   );
@@ -81,7 +81,7 @@ export default async function KatalogPage(props: PageProps<"/produk">) {
           </p>
           <a
             className="btn btn-wa mt-6"
-            href={whatsappLink(catalogCopy.request.message)}
+            href={whatsappLink(catalogCopy.request.message, waNumber)}
             target="_blank"
             rel="noopener noreferrer"
           >

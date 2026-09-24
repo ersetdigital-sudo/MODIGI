@@ -9,3 +9,5 @@
 - Expects agent to commit and push to GitHub after fixing, without being asked separately. Confidence: 0.9
 - Comfortable reporting vague issues ("ada banyak masalah") and leaving it to the agent to investigate and fix what's found. Confidence: 0.8
 - Prefers images displayed at their natural/original size with responsive sizing, not constrained to fixed pixel dimensions. Wants product photos to render at full natural aspect ratio. Confidence: 0.9
+- Dislikes excessive whitespace/empty space around product photos and in product detail layouts — prefers compact, tight spacing. Confidence: 0.9
+- Prefers minimal UI — will ask to remove unnecessary buttons or elements (e.g. "Masuk" login button) from pages. Values clean, uncluttered interfaces. Confidence: 0.8

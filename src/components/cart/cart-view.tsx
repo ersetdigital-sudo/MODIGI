@@ -16,7 +16,7 @@ import { whatsappLink } from "@/lib/whatsapp";
  * Dipisah dari `page.tsx` supaya halamannya tetap komponen server (metadata,
  * judul), sementara bagian yang butuh state jadi client.
  */
-export function CartView() {
+export function CartView({ waNumber }: { waNumber?: string }) {
   const { lines, count, total, savings, ready, clear } = useCart();
 
   return (
@@ -38,7 +38,7 @@ export function CartView() {
       {!ready ? (
         <KeranjangMemuat />
       ) : lines.length === 0 ? (
-        <KeranjangKosong />
+        <KeranjangKosong waNumber={waNumber} />
       ) : (
         <div className="mt-8 grid items-start gap-8 lg:grid-cols-[1.6fr_1fr]">
           <div>
@@ -120,7 +120,7 @@ export function CartView() {
 }
 
 /** Keranjang kosong: satu kartu, dua langkah berikutnya. */
-function KeranjangKosong() {
+function KeranjangKosong({ waNumber }: { waNumber?: string }) {
   return (
     <div className="card mt-8 flex flex-col items-center px-6 py-14 text-center">
       <span className="ico-wrap size-12 rounded-2xl bg-[#f1eee7] text-[var(--muted)]">
@@ -138,7 +138,7 @@ function KeranjangKosong() {
       </Link>
 
       <a
-        href={whatsappLink(cartCopy.empty.helpMessage)}
+        href={whatsappLink(cartCopy.empty.helpMessage, waNumber)}
         target="_blank"
         rel="noopener noreferrer"
         className="mt-4 inline-flex h-9 items-center gap-2 text-[13.5px] font-semibold text-[var(--muted)] transition-colors hover:text-[var(--ink)]"

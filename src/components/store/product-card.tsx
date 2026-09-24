@@ -56,6 +56,7 @@ export function StoreProductCard({
           <PluginBoxArt
             art={product.art}
             sizes="(min-width: 1024px) 164px, (min-width: 640px) 152px, 88px"
+            cover
           />
         </span>
       </div>

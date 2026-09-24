@@ -9,7 +9,7 @@ import { StarRating } from "@/components/ui/star-rating";
 import { kategoriCta, kategoriHero, kategoriKosong, kategoriSections } from "@/data/kategori";
 import { ambilKategori, ambilProduk } from "@/lib/catalog";
 import { formatRupiah } from "@/lib/format";
-import { whatsappLink } from "@/lib/whatsapp";
+import { ambilWhatsappNumber, whatsappLink } from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
   title: { absolute: "Kategori Produk — Pilih Sesuai Kebutuhan | MODIGI" },
@@ -26,6 +26,7 @@ export const metadata: Metadata = {
  * ada link yang mengarah ke hasil pencarian kosong tanpa penjelasan.
  */
 export default async function KategoriPage() {
+  const waNumber = await ambilWhatsappNumber();
   const [categories, products] = await Promise.all([ambilKategori(), ambilProduk()]);
 
   const groups = categories.map((category) => {
@@ -236,7 +237,7 @@ export default async function KategoriPage() {
 
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <a
-                href={whatsappLink(kategoriCta.action.message)}
+                href={whatsappLink(kategoriCta.action.message, waNumber)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={buttonClass({ variant: "gold", size: "lg" })}

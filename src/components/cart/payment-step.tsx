@@ -54,7 +54,7 @@ const ikonMetode: Record<MetodeBayarKind, typeof Landmark> = {
  * Catatan: yang disimpan di browser hanya **pilihannya** (`writePaymentChoice`),
  * bukan bukti pembayaran. Bukti yang sah tetap catatan admin di dashboard.
  */
-export function PaymentStep({ methods }: { methods: MetodeBayar[] }) {
+export function PaymentStep({ methods, waNumber }: { methods: MetodeBayar[]; waNumber?: string }) {
   const { order, ready } = useLastOrder();
   const { pilihan: tersimpan } = usePaymentChoice();
   const passwordTab = usePasswordInstalasi();
@@ -140,7 +140,7 @@ export function PaymentStep({ methods }: { methods: MetodeBayar[] }) {
     // Buka WhatsApp dulu (masih di dalam gestur klik, jadi tidak diblokir browser),
     // baru pindah ke halaman konfirmasi.
     window.open(
-      whatsappLink(paymentConfirmMessage(order, pilihan, aktif, passwordFinal)),
+      whatsappLink(paymentConfirmMessage(order, pilihan, aktif, passwordFinal), waNumber),
       "_blank",
       "noopener,noreferrer",
     );

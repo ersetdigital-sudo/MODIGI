@@ -5,7 +5,7 @@ import { WhatsappIcon } from "@/components/store/whatsapp-icon";
 import { discountPercent } from "@/data/products";
 import { paymentNote, priceNote, productTrust } from "@/data/store";
 import { formatRupiah } from "@/lib/format";
-import { whatsappLink } from "@/lib/whatsapp";
+import { ambilWhatsappNumber, whatsappLink } from "@/lib/whatsapp";
 import type { Product } from "@/types";
 
 /**
@@ -13,7 +13,8 @@ import type { Product } from "@/types";
  * daftar trust, dan catatan pembayaran.
  * Di desktop menempel (sticky) di kolom kanan; di mobile jadi bagian normal.
  */
-export function ProductBuyBox({ product }: { product: Product }) {
+export async function ProductBuyBox({ product }: { product: Product }) {
+  const waNumber = await ambilWhatsappNumber();
   const askMessage = `Halo, saya mau tanya soal ${product.name}.`;
 
   return (
@@ -46,7 +47,7 @@ export function ProductBuyBox({ product }: { product: Product }) {
 
         <a
           className="btn btn-wa w-full"
-          href={whatsappLink(askMessage)}
+          href={whatsappLink(askMessage, waNumber)}
           target="_blank"
           rel="noopener noreferrer"
         >

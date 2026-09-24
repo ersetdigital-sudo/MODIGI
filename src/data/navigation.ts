@@ -2,6 +2,7 @@ import type { FooterColumn, NavItem, SocialLink } from "@/types";
 
 /** Navigasi utama di header. */
 export const mainNav: NavItem[] = [
+  { label: "Home", href: "/" },
   {
     label: "Produk",
     href: "/produk",

@@ -16,7 +16,7 @@ import {
   updateSection,
 } from "@/data/support";
 import { orderSteps, paymentNote } from "@/data/store";
-import { whatsappLink } from "@/lib/whatsapp";
+import { ambilWhatsappNumber, whatsappLink } from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
   // `absolute`: judul SEO lengkap tanpa dobel brand dari template root layout.
@@ -37,7 +37,8 @@ const sectionLead = "mt-2.5 max-w-2xl text-[15px] leading-relaxed text-[var(--mu
  * dipakai juga oleh link di footer (`/bantuan#aktivasi`, dst), dan semua section
  * diberi `scroll-mt` supaya judulnya tidak tertutup header yang menempel.
  */
-export default function SupportPage() {
+export default async function SupportPage() {
+  const waNumber = await ambilWhatsappNumber();
   return (
     <div className="pb-20">
       <div className="mx-auto max-w-6xl px-5">
@@ -64,7 +65,7 @@ export default function SupportPage() {
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <a
               className="btn btn-wa"
-              href={whatsappLink(supportHero.primary.message)}
+              href={whatsappLink(supportHero.primary.message, waNumber)}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -278,7 +279,7 @@ export default function SupportPage() {
                       <li key={label}>
                         <a
                           className={className}
-                          href={whatsappLink(message)}
+                           href={whatsappLink(message, waNumber)}
                           target="_blank"
                           rel="noopener noreferrer"
                         >

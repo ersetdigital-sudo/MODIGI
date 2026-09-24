@@ -556,3 +556,38 @@ export async function hapusPembayaranAction(formData: FormData) {
   revalidatePath(`/admin/pesanan/${orderId}`);
   redirect(`/admin/pesanan/${orderId}?pesan=pembayaran-dihapus`);
 }
+
+// ---------------------------------------------------------------------------
+// Pengaturan (WhatsApp, dll)
+// ---------------------------------------------------------------------------
+
+/** Segarkan semua halaman yang menampilkan nomor WhatsApp. */
+function segarkanWhatsapp() {
+  revalidatePath("/");
+  revalidatePath("/produk");
+  revalidatePath("/bantuan");
+  revalidatePath("/tentang");
+  revalidatePath("/testimoni");
+  revalidatePath("/kategori");
+  revalidatePath("/checkout");
+  revalidatePath("/checkout/pembayaran");
+  revalidatePath("/admin/pengaturan");
+}
+
+export async function simpanWhatsappAction(formData: FormData) {
+  await jaga();
+
+  const supabase = ambilSupabase();
+  const nomor = teks(formData.get("whatsapp_number"));
+
+  if (!nomor) redirect("/admin/pengaturan?galat=nomor-kosong");
+
+  const { error } = await supabase
+    .from("settings")
+    .upsert({ key: "whatsapp_number", value: nomor }, { onConflict: "key" });
+
+  if (error) redirect(`/admin/pengaturan?galat=${encodeURIComponent(error.message)}`);
+
+  segarkanWhatsapp();
+  redirect("/admin/pengaturan?pesan=berhasil");
+}

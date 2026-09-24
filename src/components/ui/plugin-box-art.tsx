@@ -12,6 +12,8 @@ type PluginBoxArtProps = {
    * gambarnya jadi sedikit kabur.
    */
   sizes?: string;
+  /** Gunakan `object-cover` (isi penuh, potong tepi) alih-alih `object-contain`. */
+  cover?: boolean;
 };
 
 /**
@@ -28,17 +30,16 @@ type PluginBoxArtProps = {
  * Struktur box: muka depan (label) + sisi kanan + bibir atas, digambar dengan
  * `clip-path` (bukan transform 3D) supaya geometrinya pasti sama di semua browser.
  */
-export function PluginBoxArt({ art, className, sizes }: PluginBoxArtProps) {
+export function PluginBoxArt({ art, className, sizes, cover }: PluginBoxArtProps) {
   if (art.image) {
     return (
-      <div className={cn("relative w-full", className)}>
+      <div className={cn("relative h-full w-full", className)}>
         <Image
           src={art.image}
           alt=""
-          width={800}
-          height={800}
-          sizes={sizes ?? "(min-width: 1024px) 400px, 90vw"}
-          className="h-auto w-full object-contain drop-shadow-lg"
+          fill
+          sizes={sizes ?? "(min-width: 1024px) 240px, 45vw"}
+          className={cn("drop-shadow-lg", cover ? "object-cover" : "object-contain")}
         />
       </div>
     );

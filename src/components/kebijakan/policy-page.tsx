@@ -6,7 +6,7 @@ import { Container } from "@/components/ui/container";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { policies } from "@/data/policies";
 import { contactChannels } from "@/data/support";
-import { whatsappLink } from "@/lib/whatsapp";
+import { ambilWhatsappNumber, whatsappLink } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
 import type { PolicyDoc, PolicySection } from "@/types";
 
@@ -24,7 +24,8 @@ import type { PolicyDoc, PolicySection } from "@/types";
  * - Nomor bagian dipakai di daftar isi dan di judul, jadi orang bisa bilang
  *   "lihat bagian 4" tanpa harus mengutip seluruh kalimatnya.
  */
-export function PolicyPage({ doc }: { doc: PolicyDoc }) {
+export async function PolicyPage({ doc }: { doc: PolicyDoc }) {
+  const waNumber = await ambilWhatsappNumber();
   return (
     <div className="pb-20">
       <PolicyHero doc={doc} />
@@ -300,7 +301,8 @@ function PolicySection({ section, number }: { section: PolicySection; number: nu
 }
 
 /** Penutup: satu jalur bantuan untuk semua dokumen (posisinya selalu sama). */
-function PolicyHelpCard() {
+async function PolicyHelpCard() {
+  const waNumber = await ambilWhatsappNumber();
   const whatsapp = contactChannels[0];
   const email = contactChannels[1];
 
@@ -320,7 +322,7 @@ function PolicyHelpCard() {
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
         <a
-          href={whatsappLink(whatsapp.message ?? "Halo, saya mau tanya soal aturan di MODIGI.")}
+          href={whatsappLink(whatsapp.message ?? "Halo, saya mau tanya soal aturan di MODIGI.", waNumber)}
           target="_blank"
           rel="noopener noreferrer"
           className={buttonClass({ variant: "gold", size: "lg" })}

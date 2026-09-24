@@ -4,6 +4,7 @@ import Link from "next/link";
 import { PaymentStep } from "@/components/cart/payment-step";
 import { paymentCopy } from "@/data/store";
 import { ambilMetodeBayar } from "@/lib/payment";
+import { ambilWhatsappNumber } from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
   title: "Pembayaran",
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
  * pencarian.
  */
 export default async function PembayaranPage() {
-  const metode = await ambilMetodeBayar();
+  const [metode, waNumber] = await Promise.all([ambilMetodeBayar(), ambilWhatsappNumber()]);
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-10">
@@ -45,7 +46,7 @@ export default async function PembayaranPage() {
         {paymentCopy.description}
       </p>
 
-      <PaymentStep methods={metode} />
+      <PaymentStep methods={metode} waNumber={waNumber} />
     </div>
   );
 }

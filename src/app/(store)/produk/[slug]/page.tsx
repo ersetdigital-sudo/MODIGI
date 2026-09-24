@@ -17,7 +17,7 @@ import { orderSteps, productStatsCopy, secondOpinion } from "@/data/store";
 import { ambilKategori, ambilProduk, ambilProdukBySlug } from "@/lib/catalog";
 import { formatCompact, formatRating, formatRupiah } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { whatsappLink } from "@/lib/whatsapp";
+import { ambilWhatsappNumber, whatsappLink } from "@/lib/whatsapp";
 
 /**
  * Halaman produk di-cache 5 menit lalu disegarkan langsung dari dashboard admin.
@@ -99,10 +99,11 @@ export async function generateMetadata(
 export default async function ProductDetailPage(props: PageProps<"/produk/[slug]">) {
   const { slug } = await props.params;
 
-  const [product, semuaProduk, kategori] = await Promise.all([
+  const [product, semuaProduk, kategori, waNumber] = await Promise.all([
     ambilProdukBySlug(slug),
     ambilProduk(),
     ambilKategori(),
+    ambilWhatsappNumber(),
   ]);
 
   if (!product) notFound();
@@ -143,10 +144,11 @@ export default async function ProductDetailPage(props: PageProps<"/produk/[slug]
                 className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_45%,rgba(255,255,255,0.9),transparent_75%)]"
               />
 
-              <span className="cover-box relative w-full max-w-[400px] overflow-hidden rounded-2xl">
+              <span className="cover-box relative aspect-square w-full overflow-hidden rounded-2xl">
                 <PluginBoxArt
                   art={product.art}
-                  sizes="(min-width: 1024px) 400px, 90vw"
+                  sizes="(min-width: 1024px) 600px, 90vw"
+                cover
                 />
               </span>
             </div>
@@ -208,7 +210,7 @@ export default async function ProductDetailPage(props: PageProps<"/produk/[slug]
                 </p>
                 <a
                   className="mt-2 inline-block text-[13px] font-bold text-[var(--accent)] hover:underline"
-                  href={whatsappLink(secondOpinion.message)}
+                  href={whatsappLink(secondOpinion.message, waNumber)}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

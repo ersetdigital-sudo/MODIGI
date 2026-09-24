@@ -14,7 +14,7 @@ import {
   aboutValues,
 } from "@/data/about";
 import { siteConfig } from "@/data/site";
-import { whatsappLink } from "@/lib/whatsapp";
+import { ambilWhatsappNumber, whatsappLink } from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
   // `absolute` dipakai supaya judul tidak dobel brand (root layout menambah
@@ -33,7 +33,8 @@ export const metadata: Metadata = {
  *
  * Semua teksnya di `src/data/about.ts`, jadi edit copy tidak perlu menyentuh JSX.
  */
-export default function TentangPage() {
+export default async function TentangPage() {
+  const waNumber = await ambilWhatsappNumber();
   return (
     <>
       {/* Hero — panel gelap, sejalan dengan beranda. */}
@@ -61,7 +62,7 @@ export default function TentangPage() {
             </ButtonLink>
 
             <a
-              href={whatsappLink(aboutHero.secondary.message)}
+              href={whatsappLink(aboutHero.secondary.message, waNumber)}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-line-dark px-6 text-[15px] font-semibold text-white transition-colors hover:border-gold hover:text-gold focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-ink focus-visible:outline-none"
@@ -220,7 +221,7 @@ export default function TentangPage() {
                 </ButtonLink>
 
                 <a
-                  href={whatsappLink(aboutCta.secondary.message)}
+                  href={whatsappLink(aboutCta.secondary.message, waNumber)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex h-12 items-center justify-center rounded-lg border border-line-dark px-6 text-[15px] font-semibold text-white transition-colors hover:border-gold hover:text-gold focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-ink focus-visible:outline-none"

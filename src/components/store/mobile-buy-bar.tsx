@@ -1,14 +1,15 @@
 import { BuyNowButton } from "@/components/cart/add-to-cart";
 import { WhatsappIcon } from "@/components/store/whatsapp-icon";
 import { formatRupiah } from "@/lib/format";
-import { whatsappLink } from "@/lib/whatsapp";
+import { ambilWhatsappNumber, whatsappLink } from "@/lib/whatsapp";
 import type { Product } from "@/types";
 
 /**
  * Bar beli yang menempel di bawah layar (hanya < lg) — harga + tombol tanya
  * (WhatsApp) dan tombol beli yang langsung masuk keranjang & ke checkout.
  */
-export function MobileBuyBar({ product }: { product: Product }) {
+export async function MobileBuyBar({ product }: { product: Product }) {
+  const waNumber = await ambilWhatsappNumber();
   const askMessage = `Halo, saya mau tanya soal ${product.name}.`;
 
   return (
@@ -22,7 +23,7 @@ export function MobileBuyBar({ product }: { product: Product }) {
 
       <a
         className="btn btn-wa btn-sm"
-        href={whatsappLink(askMessage)}
+        href={whatsappLink(askMessage, waNumber)}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Tanya via WhatsApp"

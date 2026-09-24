@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { OrderDone } from "@/components/cart/order-done";
 import { orderDoneCopy } from "@/data/store";
+import { ambilWhatsappNumber } from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
   title: "Pesanan Terkirim",
@@ -18,7 +19,9 @@ export const metadata: Metadata = {
  * nomor pesanan dan data pembeli tidak ikut tercatat di riwayat browser maupun
  * terkirim sebagai referrer kalau link-nya dibagikan.
  */
-export default function CheckoutSelesaiPage() {
+export default async function CheckoutSelesaiPage() {
+  const waNumber = await ambilWhatsappNumber();
+
   return (
     <div className="mx-auto max-w-6xl px-5 py-10">
       <nav aria-label="Breadcrumb" className="text-[13px] text-[var(--muted)]">
@@ -39,7 +42,7 @@ export default function CheckoutSelesaiPage() {
         {orderDoneCopy.description}
       </p>
 
-      <OrderDone />
+      <OrderDone waNumber={waNumber} />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import {
   ExternalLink,
   FolderTree,
   LayoutDashboard,
+  Settings,
   ShoppingCart,
   Wallet,
 } from "lucide-react";
@@ -42,6 +43,7 @@ export function AdminNav({ lencanaPesanan }: { lencanaPesanan: number }) {
     { label: "Kategori", href: "/admin/kategori", icon: FolderTree },
     { label: "Pesanan", href: "/admin/pesanan", icon: ShoppingCart, lencana: lencanaPesanan },
     { label: "Pembayaran", href: "/admin/pembayaran", icon: Wallet },
+    { label: "Pengaturan", href: "/admin/pengaturan", icon: Settings },
   ];
 
   const aktif = (href: string) =>

@@ -42,7 +42,7 @@ export function StoreProductCard({
         className,
       )}
     >
-      <div className="relative flex h-[124px] items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-b from-[#fbf9f5] to-[#efeae1] ring-1 ring-black/[0.05] sm:h-[190px] lg:h-[204px]">
+      <div className="relative flex h-[140px] items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-b from-[#fbf9f5] to-[#efeae1] ring-1 ring-black/[0.05] sm:h-[190px] lg:h-[204px]">
         {/* Sorot lembut di belakang artwork. */}
         <span
           aria-hidden="true"
@@ -52,10 +52,10 @@ export function StoreProductCard({
         {/* Ukuran artwork sengaja dibesarkan supaya mockup box-nya "seberat" di
             beranda (di sana kartunya lebih besar & 3 kolom). Kotak box yang
             tergambar = 90% dari tinggi wadah ini, jadi 164px → box ~148px. */}
-        <span className="cover-box relative size-[88px] overflow-hidden rounded-2xl sm:size-[152px] lg:size-[164px]">
+        <span className="cover-box relative size-[112px] overflow-hidden rounded-2xl sm:size-[152px] lg:size-[164px]">
           <PluginBoxArt
             art={product.art}
-            sizes="(min-width: 1024px) 164px, (min-width: 640px) 152px, 88px"
+            sizes="(min-width: 1024px) 164px, (min-width: 640px) 152px, 112px"
             cover
           />
         </span>

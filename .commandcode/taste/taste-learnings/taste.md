@@ -11,3 +11,6 @@
 - Prefers images displayed at their natural/original size with responsive sizing, not constrained to fixed pixel dimensions. Wants product photos to render at full natural aspect ratio. Confidence: 0.9
 - Dislikes excessive whitespace/empty space around product photos and in product detail layouts — prefers compact, tight spacing. Confidence: 0.9
 - Prefers minimal UI — will ask to remove unnecessary buttons or elements (e.g. "Masuk" login button) from pages. Values clean, uncluttered interfaces. Confidence: 0.8
+- Shares API tokens and credentials (Supabase keys, etc.) directly in chat and expects the agent to execute infrastructure tasks (run SQL, configure services) independently. Prefers the agent to "just do it" rather than provide manual instructions. Confidence: 0.9
+- When requesting a feature, expects it to apply site-wide consistently — e.g. changing a WhatsApp number must update every page, not just one. Values holistic, not localized, solutions. Confidence: 0.9
+- Bundles multiple feature requests into a single message (UI fixes + new features + database changes) and expects all of them handled together. Confidence: 0.9

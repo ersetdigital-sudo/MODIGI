@@ -54,3 +54,5 @@ next-env.d.ts
 
 # metadata tool lokal
 /.freebuff/
+
+dev.log

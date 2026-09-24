@@ -20,8 +20,9 @@ type ProductCardProps = {
  * Kartu produk untuk grid katalog maupun section "Produk Terlaris".
  *
  * Dua tampilan, satu DOM:
- * - < lg : gaya aplikasi sesuai wireframe mobile — gambar tinggi tetap 112px,
- *   judul 2 baris, harga, dan tombol plus bulat di pojok kanan bawah.
+ * - < lg : gaya aplikasi sesuai wireframe mobile — media setinggi kartu
+ *   produk terkait (`h-[160px]`/`sm:h-[190px]`), judul 2 baris, harga, dan
+ *   tombol plus bulat di pojok kanan bawah.
  * - >= lg: kartu katalog lengkap (kategori, rating, tombol keranjang).
  *
  * Tanda original dipakai sama seperti di halaman katalog: seal terverifikasi
@@ -37,8 +38,20 @@ export function ProductCard({ product, className, categoryName }: ProductCardPro
         className,
       )}
     >
-      <div className="relative h-28 overflow-hidden rounded-xl bg-cream-200/70 sm:aspect-square sm:h-auto">
-        <PluginBoxArt art={product.art} className="p-4" />
+      {/* Media samain dengan `StoreProductCard` (produk terkait/katalog):
+          tinggi 160/190/204 + latar cream + `object-contain`, jadi foto home
+          nggak kepotong dan proporsinya konsisten antar section. */}
+      <div className="relative flex h-[160px] items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-b from-[#fbf9f5] to-[#efeae1] ring-1 ring-black/[0.05] sm:h-[190px] lg:h-[204px]">
+        <span
+          aria-hidden="true"
+          className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_45%,rgba(255,255,255,0.9),transparent_75%)]"
+        />
+        <span className="relative h-full w-full overflow-hidden rounded-2xl">
+          <PluginBoxArt
+            art={product.art}
+            sizes="(min-width: 1024px) 200px, (min-width: 768px) 220px, 50vw"
+          />
+        </span>
       </div>
 
       <div className="flex flex-1 flex-col px-1 pb-1 pt-2.5 lg:pt-4">

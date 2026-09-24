@@ -48,11 +48,13 @@ export function StoreProductCard({
           className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_45%,rgba(255,255,255,0.9),transparent_75%)]"
         />
 
+        {/* Tanpa `cover`: foto admin (sering landscape) tampil utuh dengan
+            `object-contain` di atas latar cream — `object-cover` memotong
+            sisanya, yang bikin foto produk terkait/katalog terlihat "kepotong". */}
         <span className="cover-box relative h-full w-full overflow-hidden rounded-2xl">
           <PluginBoxArt
             art={product.art}
-            sizes="(min-width: 1024px) 164px, (min-width: 640px) 152px, 100vw"
-            cover
+            sizes="(min-width: 1024px) 300px, (min-width: 640px) 280px, 50vw"
           />
         </span>
       </div>

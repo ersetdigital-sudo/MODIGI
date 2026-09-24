@@ -132,23 +132,28 @@ export default async function ProductDetailPage(props: PageProps<"/produk/[slug]
           <div className="min-w-0">
             {/*
               Foto produk ditampilkan **persis seperti di kartu katalog**: latar
-              cream, sudut membulat, dan ukuran artwork 88/152/164px. Sebelumnya di
-              sini ada panggung gelap + glow warna brand + bingkai putih yang miring
-              — produk yang sama jadi terlihat berbeda antara katalog dan halaman
-              detailnya. Kelas panggung itu sudah dihapus dari `store.css` supaya
-              tidak ada sisa gaya yang menempel tanpa pemilik.
+              cream, sudut membulat, tanpa crop (`object-contain`) supaya foto
+              dari admin tidak pernah kepotong.
+
+              `aspect-square` di panggung + `h-full` di cover-box di bawah ini
+              WAJIB: `<Image fill>` hanya mengisi kotak yang punya ukuran nyata.
+              Tanpa tinggi yang diwariskan sampai ke `PluginBoxArt`, rantainya
+              berakhir di 0 piksel dan foto tidak muncul sama sekali.
+
+              Sebelumnya di sini ada panggung gelap + glow warna brand + bingkai
+              putih yang miring — produk yang sama jadi terlihat berbeda antara
+              katalog dan halaman detailnya.
             */}
-            <div className="relative flex max-w-lg items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-b from-[#fbf9f5] to-[#efeae1] ring-1 ring-black/[0.05]">
+            <div className="relative flex aspect-square max-w-lg items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-b from-[#fbf9f5] to-[#efeae1] ring-1 ring-black/[0.05]">
               <span
                 aria-hidden="true"
                 className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_45%,rgba(255,255,255,0.9),transparent_75%)]"
               />
 
-              <span className="cover-box relative w-full overflow-hidden rounded-2xl">
+              <span className="cover-box relative h-full w-full overflow-hidden rounded-2xl">
                 <PluginBoxArt
                   art={product.art}
-                  sizes="(min-width: 1024px) 600px, 90vw"
-                cover
+                  sizes="(min-width: 1024px) 512px, 100vw"
                 />
               </span>
             </div>

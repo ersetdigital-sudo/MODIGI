@@ -42,16 +42,21 @@ export function StoreProductCard({
         className,
       )}
     >
-      <div className="relative flex h-[160px] items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-b from-[#fbf9f5] to-[#efeae1] ring-1 ring-black/[0.05] sm:h-[190px] lg:h-[204px]">
+      {/* Wadah gambar: rasio persegi (sama untuk semua kartu) dan gambar di-cover
+          penuh — jadi tidak ada ruang kosong di kiri/kanan. Sudut mengikuti kartu. */}
+      <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-gradient-to-b from-[#fbf9f5] to-[#efeae1] ring-1 ring-black/[0.05]">
         <span
           aria-hidden="true"
           className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_45%,rgba(255,255,255,0.9),transparent_75%)]"
         />
 
-        <span className="cover-box relative h-full w-full overflow-hidden rounded-2xl">
+        {/* `absolute inset-0` (bukan `h-full` di dalam flex) supaya tinggi wadah
+            gambar PASTI terisi — `<Image fill>` butuh parent berukuran, kalau
+            tidak tingginya 0 dan gambarnya tidak kelihatan sama sekali. */}
+        <span className="cover-box absolute inset-0 overflow-hidden rounded-2xl">
           <PluginBoxArt
             art={product.art}
-            sizes="(min-width: 1024px) 164px, (min-width: 640px) 152px, 100vw"
+            sizes="(min-width: 1280px) 280px, (min-width: 768px) 33vw, 50vw"
             cover
           />
         </span>

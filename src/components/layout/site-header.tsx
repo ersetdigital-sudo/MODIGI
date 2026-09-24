@@ -27,13 +27,20 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 border-b border-transparent bg-ink/95 backdrop-blur lg:border-line-dark">
       <HeaderWave />
 
-      <Container className="flex h-16 items-center gap-4 lg:h-[72px] lg:gap-8">
+      <Container className="relative flex h-16 items-center gap-4 lg:h-[72px] lg:gap-8">
         <Link href="/" aria-label={siteConfig.name} onClick={closeMenu}>
           <Logo />
         </Link>
 
-        <nav aria-label="Navigasi utama" className="hidden lg:block lg:flex-1">
-          <ul className="flex items-center justify-center gap-1">
+        {/* Menu desktop diposisikan absolut di tengah container, supaya benar-benar
+            center terhadap lebar navbar — bukan ikut tergeser oleh lebar logo di
+            kiri dan kolom aksi di kanan. Di mobile nav ini `hidden`, jadi layout
+            hamburger tidak terpengaruh. */}
+        <nav
+          aria-label="Navigasi utama"
+          className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 lg:block"
+        >
+          <ul className="flex items-center gap-1">
             {mainNav.map((item) => (
               <li key={item.label} className="group relative">
                 <Link

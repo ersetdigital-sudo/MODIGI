@@ -31,13 +31,14 @@ type PluginBoxArtProps = {
 export function PluginBoxArt({ art, className, sizes }: PluginBoxArtProps) {
   if (art.image) {
     return (
-      <div className={cn("relative h-full w-full", className)}>
+      <div className={cn("relative w-full", className)}>
         <Image
           src={art.image}
           alt=""
-          fill
-          sizes={sizes ?? "(min-width: 1024px) 240px, 45vw"}
-          className="object-contain drop-shadow-lg"
+          width={800}
+          height={800}
+          sizes={sizes ?? "(min-width: 1024px) 400px, 90vw"}
+          className="h-auto w-full object-contain drop-shadow-lg"
         />
       </div>
     );

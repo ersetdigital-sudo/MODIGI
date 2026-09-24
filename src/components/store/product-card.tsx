@@ -42,8 +42,7 @@ export function StoreProductCard({
         className,
       )}
     >
-      <div className="relative flex aspect-[3/4] items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-b from-[#fbf9f5] to-[#efeae1] ring-1 ring-black/[0.05]">
-        {/* Sorot lembut di belakang artwork. */}
+      <div className="relative flex h-[160px] items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-b from-[#fbf9f5] to-[#efeae1] ring-1 ring-black/[0.05] sm:h-[190px] lg:h-[204px]">
         <span
           aria-hidden="true"
           className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_45%,rgba(255,255,255,0.9),transparent_75%)]"
@@ -52,7 +51,7 @@ export function StoreProductCard({
         <span className="cover-box relative h-full w-full overflow-hidden rounded-2xl">
           <PluginBoxArt
             art={product.art}
-            sizes="(min-width: 1024px) 164px, (min-width: 640px) 152px, 112px"
+            sizes="(min-width: 1024px) 164px, (min-width: 640px) 152px, 100vw"
             cover
           />
         </span>

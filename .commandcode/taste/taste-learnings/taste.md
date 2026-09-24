@@ -14,3 +14,4 @@
 - Shares API tokens and credentials (Supabase keys, etc.) directly in chat and expects the agent to execute infrastructure tasks (run SQL, configure services) independently. Prefers the agent to "just do it" rather than provide manual instructions. Confidence: 0.9
 - When requesting a feature, expects it to apply site-wide consistently — e.g. changing a WhatsApp number must update every page, not just one. Values holistic, not localized, solutions. Confidence: 0.9
 - Bundles multiple feature requests into a single message (UI fixes + new features + database changes) and expects all of them handled together. Confidence: 0.9
+- Expects visual consistency across different sections — product card sizing/layout on product detail pages must match the catalog page. Will point out mismatches and say "samain aja kaya di [reference page]". Confidence: 0.9

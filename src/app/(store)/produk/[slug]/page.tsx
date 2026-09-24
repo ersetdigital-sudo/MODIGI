@@ -138,13 +138,13 @@ export default async function ProductDetailPage(props: PageProps<"/produk/[slug]
               detailnya. Kelas panggung itu sudah dihapus dari `store.css` supaya
               tidak ada sisa gaya yang menempel tanpa pemilik.
             */}
-            <div className="relative flex items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-b from-[#fbf9f5] to-[#efeae1] ring-1 ring-black/[0.05]">
+            <div className="relative flex max-w-lg items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-b from-[#fbf9f5] to-[#efeae1] ring-1 ring-black/[0.05]">
               <span
                 aria-hidden="true"
                 className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_45%,rgba(255,255,255,0.9),transparent_75%)]"
               />
 
-              <span className="cover-box relative aspect-square w-full overflow-hidden rounded-2xl">
+              <span className="cover-box relative w-full overflow-hidden rounded-2xl">
                 <PluginBoxArt
                   art={product.art}
                   sizes="(min-width: 1024px) 600px, 90vw"

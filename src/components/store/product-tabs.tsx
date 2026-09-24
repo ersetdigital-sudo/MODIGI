@@ -83,7 +83,7 @@ export function ProductTabs({ product }: { product: Product }) {
           aria-labelledby="tab-deskripsi"
           hidden={active !== "deskripsi"}
         >
-          <p className="max-w-2xl text-[15.5px] leading-relaxed text-[#3a352e]">
+          <p className="max-w-2xl whitespace-pre-line text-[15.5px] leading-relaxed text-[#3a352e]">
             {product.description}
           </p>
         </section>

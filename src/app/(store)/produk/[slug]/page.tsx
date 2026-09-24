@@ -113,7 +113,7 @@ export default async function ProductDetailPage(props: PageProps<"/produk/[slug]
   return (
     <div className="pb-24 lg:pb-0">
       <div className="mx-auto max-w-6xl px-5">
-        <nav aria-label="Breadcrumb" className="pt-8 text-[13px] text-[var(--muted)]">
+        <nav aria-label="Breadcrumb" className="pt-6 text-[13px] text-[var(--muted)]">
           <Link href="/" className="hover:text-[var(--ink)]">
             Beranda
           </Link>{" "}
@@ -127,7 +127,7 @@ export default async function ProductDetailPage(props: PageProps<"/produk/[slug]
         {/* `min-w-0` di kedua kolom: tanpa itu item grid memakai `min-width: auto`
             (lebar min-content), dan baris tab yang tidak bisa dipecah melebarkan
             seluruh halaman ~19px di layar 320px. */}
-        <div className="mt-5 grid items-start gap-8 lg:grid-cols-[1.35fr_1fr]">
+        <div className="mt-4 grid items-start gap-6 lg:grid-cols-[1.35fr_1fr]">
           <div className="min-w-0">
             {/*
               Foto produk ditampilkan **persis seperti di kartu katalog**: latar
@@ -143,7 +143,7 @@ export default async function ProductDetailPage(props: PageProps<"/produk/[slug]
                 className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_45%,rgba(255,255,255,0.9),transparent_75%)]"
               />
 
-              <span className="cover-box relative w-full max-w-[400px] overflow-hidden rounded-2xl p-4">
+              <span className="cover-box relative w-full max-w-[400px] overflow-hidden rounded-2xl">
                 <PluginBoxArt
                   art={product.art}
                   sizes="(min-width: 1024px) 400px, 90vw"
@@ -151,7 +151,7 @@ export default async function ProductDetailPage(props: PageProps<"/produk/[slug]
               </span>
             </div>
 
-            <div className="mt-7">
+            <div className="mt-5">
               <span className="kicker block">
                 {namaKategori.get(product.categorySlug) ?? product.categorySlug}
               </span>
@@ -171,7 +171,7 @@ export default async function ProductDetailPage(props: PageProps<"/produk/[slug]
                 informasinya ada di tabel Spesifikasi (satu sumber data).
                 Di mobile kartu ketiga melebar penuh supaya tidak ada lubang di
                 grid 2 kolom, dan `auto-rows-fr` menjaga tingginya seragam. */}
-            <div className="mt-6 grid auto-rows-fr grid-cols-2 gap-3 md:grid-cols-3">
+            <div className="mt-4 grid auto-rows-fr grid-cols-2 gap-3 md:grid-cols-3">
               <Stat
                 icon={Star}
                 iconClassName="fill-[var(--amber)] text-[var(--amber)]"
@@ -221,7 +221,7 @@ export default async function ProductDetailPage(props: PageProps<"/produk/[slug]
 
         <ProductReviews product={product} />
 
-        <section className="card mt-14 p-6 md:p-8">
+        <section className="card mt-10 p-6 md:p-8">
           <h2 className="text-[20px] font-extrabold tracking-[-0.02em]">Cara pesan</h2>
 
           <ol className="mt-5 grid gap-6 sm:grid-cols-3 sm:gap-7">
@@ -240,7 +240,7 @@ export default async function ProductDetailPage(props: PageProps<"/produk/[slug]
           </ol>
         </section>
 
-        <section className="mt-14">
+        <section className="mt-10">
           <div className="flex items-end justify-between gap-4">
             <h2 className="text-[24px] font-extrabold tracking-[-0.02em] md:text-[30px]">
               Produk terkait
@@ -254,7 +254,7 @@ export default async function ProductDetailPage(props: PageProps<"/produk/[slug]
             </Link>
           </div>
 
-          <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {related.map((item) => (
               <StoreProductCard
                 key={item.slug}

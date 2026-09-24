@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { CartLink } from "@/components/cart/cart-link";
-import { ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { Logo } from "@/components/ui/logo";
 import { SearchForm } from "@/components/ui/search-form";
@@ -82,10 +81,6 @@ export function SiteHeader() {
               Jumlahnya datang dari state keranjang asli (`CartLink`). */}
           <CartLink />
 
-          <ButtonLink href="/masuk" size="sm" className="hidden sm:inline-flex">
-            Masuk
-          </ButtonLink>
-
           <button
             type="button"
             onClick={() => setMobileOpen((open) => !open)}
@@ -135,10 +130,6 @@ export function SiteHeader() {
                 ))}
               </ul>
             </nav>
-
-            <ButtonLink href="/masuk" onClick={closeMenu} className="w-full">
-              Masuk
-            </ButtonLink>
           </Container>
         </div>
       )}

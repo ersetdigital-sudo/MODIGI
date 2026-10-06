@@ -340,6 +340,35 @@ trigger `updated_at`, dan RLS semuanya memakai `if not exists` / `create or repl
 Kalau database masih kosong, situs tetap tampil memakai data statis di `src/data/`
 (lihat `lib/catalog.ts`) — jadi tidak ada halaman blank saat setup belum lengkap.
 
+### Menjaga project Free tetap aktif
+
+Project Supabase **Free** otomatis di-pause kalau tidak ada **aktivitas database**
+selama sepekan (lihat [Project Pausing](https://supabase.com/docs/guides/platform/free-project-pausing)).
+Yang dihitung adalah aktivitas database — bukan sekadar ada kunjungan ke situs. Jadi
+menembak beranda **tidak menolong**: `/` dan `/kategori` di-prerender saat build dan
+disajikan sebagai HTML jadi, tanpa menyentuh database sama sekali.
+
+Karena itu tersedia **`GET /api/keepalive`** — satu query kecil yang memang dibuat
+untuk membangunkan database, supaya ping-nya tidak bergantung pada sifat halaman
+toko yang bisa berubah kapan saja:
+
+```bash
+curl https://<domain>/api/keepalive
+# {"ok":true,"waktu":"2026-10-06T13:40:00.000Z"}
+```
+
+Balasannya **200** kalau database terbaca dan **503** kalau tidak, jadi penjadwal
+yang sama sekaligus berfungsi sebagai alarm kalau database mati.
+
+Daftarkan URL itu ke penjadwal mana pun — misalnya [cron-job.org](https://cron-job.org)
+(gratis, interval bebas sampai tiap menit) — dengan jadwal **tiap 6–12 jam**. Padanan
+tanpa layanan luar: Vercel Cron lewat `vercel.json`, tapi di paket Hobby cron hanya
+jalan sekali sehari.
+
+> Tetap perhatikan email dari Supabase: peringatan dikirim sekitar sepekan sebelum
+> pause berlaku. Menjaga aktivitas hanya menurunkan peluangnya — satu-satunya cara
+yang dijamin tidak di-pause adalah upgrade ke Pro.
+
 ---
 
 ---
@@ -359,6 +388,8 @@ src/
 │  │  ├─ kategori/page.tsx    # kategori + produk per kategori
 │  │  ├─ testimoni/page.tsx   # ulasan lintas produk
 │  │  └─ kebijakan/           # 4 dokumen kebijakan (satu kerangka yang sama)
+│  │
+│  ├─ api/keepalive/route.ts  # titik denyut untuk penjadwal (jaga Supabase tidak pause)
 │  │
 │  └─ (store)/                # chrome store (tema cream/hijau)
 │     ├─ layout.tsx

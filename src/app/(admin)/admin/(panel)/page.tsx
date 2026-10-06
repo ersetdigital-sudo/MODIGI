@@ -12,10 +12,17 @@ import {
 } from "lucide-react";
 
 import { tombol } from "@/components/admin/tombol";
-import { Alert, Card, PageHeader, Pill, statusPesananNada } from "@/components/admin/ui";
+import {
+  Alert,
+  Card,
+  GalatDatabase,
+  PageHeader,
+  Pill,
+  statusPesananNada,
+} from "@/components/admin/ui";
 import { cloudinarySiap } from "@/lib/cloudinary";
 import { formatRupiah, formatWaktu } from "@/lib/format";
-import { ambilSupabase, supabaseSiap } from "@/lib/supabase";
+import { ambilSupabase, galatQuery, supabaseSiap } from "@/lib/supabase";
 
 export const metadata: Metadata = { title: "Dasbor" };
 
@@ -57,8 +64,21 @@ export default async function DasborPage() {
 
   // Omzet dihitung dari pembayaran yang benar-benar lunas — bukan dari pesanan
   // yang dibuat, karena pesanan bisa batal sebelum dibayar.
-  const { data: pembayaran } = await supabase.from("payments").select("amount").eq("status", "lunas");
+  const { data: pembayaran, error: galatPembayaran } = await supabase
+    .from("payments")
+    .select("amount")
+    .eq("status", "lunas");
   const omzet = (pembayaran ?? []).reduce((total, baris) => total + baris.amount, 0);
+
+  /*
+   * Angka nol di halaman ini hanya boleh berarti "memang nol". Kalau salah satu
+   * query gagal, halaman harus bilang database tidak terbaca — karena "omzet Rp 0"
+   * dan "omzet tidak bisa dibaca" itu dua hal yang sangat berbeda bagi pemilik toko.
+   */
+  const galatDb =
+    galatQuery(produk, produkDraft, kategori, pesanan, pesananBaru, pesananTerbaru) ??
+    galatPembayaran?.message ??
+    null;
 
   const statistik = [
     {
@@ -103,6 +123,8 @@ export default async function DasborPage() {
           </Link>
         }
       />
+
+      {galatDb ? <GalatDatabase pesan={galatDb} /> : null}
 
       {!cloudinarySiap() ? (
         <Alert tone="gagal">
@@ -150,7 +172,12 @@ export default async function DasborPage() {
           }
           bodyClassName="px-0 py-0"
         >
-          {(pesananTerbaru.data ?? []).length === 0 ? (
+          {galatDb ? (
+            <p className="px-5 py-10 text-center text-[13.5px] leading-relaxed text-[#6f6f74]">
+              Daftar pesanan tidak bisa dibaca dari database, jadi bagian ini sengaja dibiarkan
+              kosong — bukan berarti tidak ada pesanan yang masuk.
+            </p>
+          ) : (pesananTerbaru.data ?? []).length === 0 ? (
             <p className="px-5 py-10 text-center text-[13.5px] leading-relaxed text-[#6f6f74]">
               Belum ada pesanan. Pesanan muncul di sini begitu pembeli menekan
               <span className="font-semibold"> Buat Pesanan</span> di halaman checkout.

@@ -206,6 +206,27 @@ export function Alert({ tone = "info", children }: { tone?: "info" | "sukses" | 
   );
 }
 
+/**
+ * Peringatan bahwa isi halaman ini belum tentu benar karena database gagal dibaca.
+ *
+ * Halaman dashboard dulu hanya mengambil `data` dari hasil query dan membuang
+ * `error`-nya. Akibatnya database yang tidak bisa dihubungi — misalnya project
+ * Supabase ter-pause karena lama tidak dibuka — tampil sama persis dengan toko
+ * kosong: "0 produk", "belum ada pesanan", omzet Rp 0. Dua keadaan itu harus bisa
+ * dibedakan, jadi setiap halaman yang membaca database menampilkan komponen ini
+ * begitu `galatQuery` menemukan galat.
+ */
+export function GalatDatabase({ pesan }: { pesan: string }) {
+  return (
+    <Alert tone="gagal">
+      Database tidak bisa dihubungi, jadi isi halaman ini <strong>belum tentu kosong</strong> —
+      datanya kemungkinan besar masih ada. Penyebab tersering: project Supabase ter-pause (buka
+      lagi dari dashboard Supabase), kredensial salah, atau jaringan putus. Muat ulang halaman ini
+      setelah beres. Pesan dari database: <code>{pesan}</code>
+    </Alert>
+  );
+}
+
 /** Keadaan kosong: satu kalimat + satu tindakan. */
 export function EmptyState({
   title,

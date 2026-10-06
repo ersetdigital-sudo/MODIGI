@@ -6,9 +6,15 @@ import { ExternalLink, ImageIcon, Pencil, Plus, Trash2 } from "lucide-react";
 import { hapusProdukAction, ubahStatusProdukAction } from "@/app/actions/admin";
 import { ConfirmSubmit, SubmitButton } from "@/components/admin/buttons";
 import { tombol } from "@/components/admin/tombol";
-import { Alert, Card, EmptyState, PageHeader, Pill } from "@/components/admin/ui";
+import { Alert, Card, EmptyState, GalatDatabase, PageHeader, Pill } from "@/components/admin/ui";
 import { formatRupiah } from "@/lib/format";
-import { ambilSupabase, supabaseSiap, type BarisKategori, type BarisProduk } from "@/lib/supabase";
+import {
+  ambilSupabase,
+  galatQuery,
+  supabaseSiap,
+  type BarisKategori,
+  type BarisProduk,
+} from "@/lib/supabase";
 
 export const metadata: Metadata = { title: "Produk" };
 
@@ -46,7 +52,7 @@ export default async function ProdukAdminPage(props: PageProps<"/admin/produk">)
 
   const supabase = ambilSupabase();
 
-  const [{ data: produk }, { data: kategori }] = await Promise.all([
+  const [hasilProduk, hasilKategori] = await Promise.all([
     supabase
       .from("products")
       .select("*")
@@ -54,16 +60,24 @@ export default async function ProdukAdminPage(props: PageProps<"/admin/produk">)
     supabase.from("categories").select("*").order("sort_order"),
   ]);
 
-  const daftar = (produk ?? []) as BarisProduk[];
+  // Query yang gagal BUKAN katalog kosong. Kalau galatnya dibuang, "0 produk di
+  // database" jadi kalimat yang bohong — pemilik toko mengira produknya hilang
+  // padahal cuma koneksi database yang tidak jalan.
+  const galatDb = galatQuery(hasilProduk, hasilKategori);
+  const daftar = (hasilProduk.data ?? []) as BarisProduk[];
   const namaKategori = new Map(
-    ((kategori ?? []) as BarisKategori[]).map((baris) => [baris.slug, baris.name]),
+    ((hasilKategori.data ?? []) as BarisKategori[]).map((baris) => [baris.slug, baris.name]),
   );
 
   return (
     <>
       <PageHeader
         title="Produk"
-        description={`${daftar.length} produk di database. Yang berstatus draft tidak tampil di katalog.`}
+        description={
+          galatDb
+            ? "Database tidak terbaca — jumlah produk tidak bisa dipastikan."
+            : `${daftar.length} produk di database. Yang berstatus draft tidak tampil di katalog.`
+        }
         action={
           <Link href="/admin/produk/baru" className={tombol.utama}>
             <Plus className="size-4" aria-hidden="true" />
@@ -75,7 +89,9 @@ export default async function ProdukAdminPage(props: PageProps<"/admin/produk">)
       {pesan && pesanSukses[pesan] ? <Alert tone="sukses">{pesanSukses[pesan]}</Alert> : null}
       {galat ? <Alert tone="gagal">{pesanGalat[galat] ?? `Terjadi kesalahan: ${galat}`}</Alert> : null}
 
-      {daftar.length === 0 ? (
+      {galatDb ? <GalatDatabase pesan={galatDb} /> : null}
+
+      {galatDb ? null : daftar.length === 0 ? (
         <EmptyState
           title="Belum ada produk"
           description="Tambahkan produk pertama — setelah disimpan, ia langsung tayang di katalog dan beranda."

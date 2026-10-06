@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 import { CategoryManager } from "@/components/admin/category-manager";
-import { Alert, PageHeader } from "@/components/admin/ui";
-import { ambilSupabase, supabaseSiap, type BarisKategori } from "@/lib/supabase";
+import { Alert, GalatDatabase, PageHeader } from "@/components/admin/ui";
+import { ambilSupabase, galatQuery, supabaseSiap, type BarisKategori } from "@/lib/supabase";
 
 export const metadata: Metadata = { title: "Kategori" };
 
@@ -38,14 +38,16 @@ export default async function KategoriAdminPage(props: PageProps<"/admin/kategor
 
   const supabase = ambilSupabase();
 
-  const [{ data: kategori }, { data: produk }] = await Promise.all([
+  const [hasilKategori, hasilProduk] = await Promise.all([
     supabase.from("categories").select("*").order("sort_order").order("name"),
     supabase.from("products").select("category_slug"),
   ]);
 
+  // Kategori yang gagal dibaca tidak sama dengan kategori yang belum dibuat.
+  const galatDb = galatQuery(hasilKategori, hasilProduk);
   const jumlahProduk = new Map<string, number>();
 
-  for (const baris of produk ?? []) {
+  for (const baris of hasilProduk.data ?? []) {
     if (!baris.category_slug) continue;
     jumlahProduk.set(baris.category_slug, (jumlahProduk.get(baris.category_slug) ?? 0) + 1);
   }
@@ -59,8 +61,12 @@ export default async function KategoriAdminPage(props: PageProps<"/admin/kategor
 
       {pesan && pesanSukses[pesan] ? <Alert tone="sukses">{pesanSukses[pesan]}</Alert> : null}
       {galat ? <Alert tone="gagal">{pesanGalat[galat] ?? `Terjadi kesalahan: ${galat}`}</Alert> : null}
+      {galatDb ? <GalatDatabase pesan={galatDb} /> : null}
 
-      <CategoryManager categories={(kategori as BarisKategori[]) ?? []} jumlahProduk={jumlahProduk} />
+      <CategoryManager
+        categories={(hasilKategori.data ?? []) as BarisKategori[]}
+        jumlahProduk={jumlahProduk}
+      />
     </>
   );
 }

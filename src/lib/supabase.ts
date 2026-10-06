@@ -43,6 +43,25 @@ export function ambilSupabase() {
   return supabaseAdmin;
 }
 
+/**
+ * Pesan galat pertama dari sederet hasil query Supabase, atau `null` kalau
+ * semuanya sukses.
+ *
+ * Halaman dashboard dulu hanya mengambil `data` dan membuang `error`. Akibatnya
+ * database yang tidak bisa dihubungi — misalnya project Supabase ter-pause karena
+ * lama tidak dibuka — tampil persis seperti toko kosong: "0 produk di database",
+ * "Belum ada pesanan", omzet Rp 0. Padahal isinya ada; yang gagal cuma koneksinya.
+ * Karena itu galatnya dikumpulkan di sini supaya bisa ditampilkan lewat <Alert>,
+ * bukan dibiarkan jadi angka nol yang menyesatkan.
+ */
+export function galatQuery(...hasil: Array<{ error: { message: string } | null }>) {
+  for (const baris of hasil) {
+    if (baris.error) return baris.error.message;
+  }
+
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // Tipe baris tabel (mengikuti supabase/schema.sql)
 // ---------------------------------------------------------------------------

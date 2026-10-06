@@ -2,9 +2,23 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ShoppingCart } from "lucide-react";
 
-import { Alert, Card, EmptyState, PageHeader, Pill, statusPesananNada } from "@/components/admin/ui";
+import {
+  Alert,
+  Card,
+  EmptyState,
+  GalatDatabase,
+  PageHeader,
+  Pill,
+  statusPesananNada,
+} from "@/components/admin/ui";
 import { formatRupiah, formatWaktu } from "@/lib/format";
-import { ambilSupabase, supabaseSiap, type BarisItemPesanan, type BarisPesanan } from "@/lib/supabase";
+import {
+  ambilSupabase,
+  galatQuery,
+  supabaseSiap,
+  type BarisItemPesanan,
+  type BarisPesanan,
+} from "@/lib/supabase";
 
 export const metadata: Metadata = { title: "Pesanan" };
 
@@ -35,7 +49,7 @@ export default async function PesananAdminPage() {
 
   const supabase = ambilSupabase();
 
-  const [{ data: pesanan }, { data: item }] = await Promise.all([
+  const [hasilPesanan, hasilItem] = await Promise.all([
     supabase
       .from("orders")
       .select("id,order_no,customer_name,customer_whatsapp,customer_domain,total,status,created_at")
@@ -44,10 +58,13 @@ export default async function PesananAdminPage() {
     supabase.from("order_items").select("order_id,product_name,qty"),
   ]);
 
-  const daftar = (pesanan ?? []) as BarisPesanan[];
+  // Pesanan yang gagal dibaca tidak sama dengan toko yang belum kebagian pesanan —
+  // bedanya penting, apalagi kalau ada pembeli yang sedang menunggu.
+  const galatDb = galatQuery(hasilPesanan, hasilItem);
+  const daftar = (hasilPesanan.data ?? []) as BarisPesanan[];
   const itemPerPesanan = new Map<string, BarisItemPesanan[]>();
 
-  for (const baris of (item ?? []) as BarisItemPesanan[]) {
+  for (const baris of (hasilItem.data ?? []) as BarisItemPesanan[]) {
     const kumpulan = itemPerPesanan.get(baris.order_id) ?? [];
     kumpulan.push(baris);
     itemPerPesanan.set(baris.order_id, kumpulan);
@@ -60,13 +77,17 @@ export default async function PesananAdminPage() {
       <PageHeader
         title="Pesanan"
         description={
-          daftar.length === 0
-            ? "Belum ada pesanan yang masuk."
-            : `${daftar.length} pesanan terakhir${baru > 0 ? ` · ${baru} belum ditindak` : ""}.`
+          galatDb
+            ? "Database tidak terbaca — jumlah pesanan tidak bisa dipastikan."
+            : daftar.length === 0
+              ? "Belum ada pesanan yang masuk."
+              : `${daftar.length} pesanan terakhir${baru > 0 ? ` · ${baru} belum ditindak` : ""}.`
         }
       />
 
-      {daftar.length === 0 ? (
+      {galatDb ? <GalatDatabase pesan={galatDb} /> : null}
+
+      {galatDb ? null : daftar.length === 0 ? (
         <EmptyState
           title="Belum ada pesanan"
           description="Setiap pesanan dari halaman checkout tercatat di sini, lengkap dengan data instalasi dan pembayarannya."
